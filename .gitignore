@@ -1,0 +1,35 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.next/
+coverage/
+
+# Python environments and generated files
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+ml-service/.pytest_cache/
+
+# Local data and model artifacts (keep datasets out of Git)
+data/raw/
+data/processed/
+models/*.joblib
+models/*.pkl
+ml-service/artifacts/*.joblib
+ml-service/data/raw/
+ml-service/data/processed/
+*.parquet
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/

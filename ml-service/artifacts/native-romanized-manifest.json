@@ -1,0 +1,90 @@
+{
+  "generated_at": "2026-11-10T07:37:13.134004+00:00",
+  "file": "data/processed/native-romanized.tsv",
+  "file_size_bytes": 847069,
+  "rows": 3000,
+  "licensed_source_rows": 3000,
+  "dataset_generated_rows": 0,
+  "synthetic_rows": 0,
+  "source_rows": 3000,
+  "target_per_applicable_cell": 500,
+  "cells": {
+    "en:native_script": {
+      "licensed_source": 0,
+      "dataset_generated": 0,
+      "source_total": 0,
+      "synthetic": 0,
+      "source_shortfall": 500
+    },
+    "en:code_mixed": {
+      "licensed_source": 0,
+      "dataset_generated": 0,
+      "source_total": 0,
+      "synthetic": 0,
+      "source_shortfall": 500
+    },
+    "hi:code_mixed": {
+      "licensed_source": 0,
+      "dataset_generated": 0,
+      "source_total": 0,
+      "synthetic": 0,
+      "source_shortfall": 500
+    },
+    "hi:native_script": {
+      "licensed_source": 500,
+      "dataset_generated": 0,
+      "source_total": 500,
+      "synthetic": 0,
+      "source_shortfall": 0
+    },
+    "hi:romanized": {
+      "licensed_source": 500,
+      "dataset_generated": 0,
+      "source_total": 500,
+      "synthetic": 0,
+      "source_shortfall": 0
+    },
+    "or:code_mixed": {
+      "licensed_source": 0,
+      "dataset_generated": 0,
+      "source_total": 0,
+      "synthetic": 0,
+      "source_shortfall": 500
+    },
+    "or:native_script": {
+      "licensed_source": 500,
+      "dataset_generated": 0,
+      "source_total": 500,
+      "synthetic": 0,
+      "source_shortfall": 0
+    },
+    "or:romanized": {
+      "licensed_source": 500,
+      "dataset_generated": 0,
+      "source_total": 500,
+      "synthetic": 0,
+      "source_shortfall": 0
+    },
+    "ta:code_mixed": {
+      "licensed_source": 0,
+      "dataset_generated": 0,
+      "source_total": 0,
+      "synthetic": 0,
+      "source_shortfall": 500
+    },
+    "ta:native_script": {
+      "licensed_source": 500,
+      "dataset_generated": 0,
+      "source_total": 500,
+      "synthetic": 0,
+      "source_shortfall": 0
+    },
+    "ta:romanized": {
+      "licensed_source": 500,
+      "dataset_generated": 0,
+      "source_total": 500,
+      "synthetic": 0,
+      "source_shortfall": 0
+    }
+  }
+}
