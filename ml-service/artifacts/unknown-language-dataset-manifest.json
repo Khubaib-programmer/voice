@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-11-10T08:41:55.488258+00:00",
+  "dataset": "Bhasha-Abhijnaanam Romanized Dakshina out-of-scope evaluation slice",
+  "source_url": "https://huggingface.co/datasets/ai4bharat/Bhasha-Abhijnaanam",
+  "license": "CC BY-SA 4.0; source text from Google Dakshina",
+  "archive_member": "bhasha-abhijnaanam.json",
+  "archive_size_bytes": 10706705,
+  "archive_sha256": "be4bd82c5b9b54528393bcbf4542a4f7f2ac9ee4fc1a3609f0ed685a1d252c19",
+  "source_record_count": 88014,
+  "eligible_unique_rows_by_language": {
+    "bn": 4594,
+    "gu": 4785,
+    "kn": 4847,
+    "ml": 4616,
+    "mr": 4599,
+    "pa": 4765,
+    "sd": 4881,
+    "te": 4739
+  },
+  "selected_rows_by_language": {
+    "bn": 100,
+    "gu": 100,
+    "kn": 100,
+    "ml": 100,
+    "mr": 100,
+    "pa": 100,
+    "sd": 100,
+    "te": 100
+  },
+  "selected_rows": 800,
+  "seed": 2026,
+  "output_file": "data/processed/unknown-eval.tsv",
+  "output_size_bytes": 126914,
+  "output_sha256": "2ecace0eba5be28d1ee0445adc4c70709aeeb692a2393f654ad027df7a5f73a6",
+  "notes": [
+    "Evaluation-only; excluded from training, validation, and known-language test data.",
+    "These rows come from the same Bhasha-Abhijnaanam archive family as some in-scope training rows, so this tests unseen language labels but is not an independent-source or domain-shift benchmark.",
+    "Romanized text is used to avoid trivially rejecting all examples by Unicode script. Results are limited to these eight Dakshina languages and this dataset domain."
+  ]
+}

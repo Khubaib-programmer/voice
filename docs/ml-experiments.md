@@ -23,9 +23,15 @@ The selected model is Linear SVM, chosen by validation macro F1 (0.9666 vs. 0.96
 
 The code-mixed test subset contains English-dominant and Hindi-dominant COMI-LINGUA examples and 100 Tamil-English mixed-script examples. It contains no Odia code-mixed samples because no verified natural Odia-English source was available. The table reports only the languages present in each category; per-language category F1 and confusion matrices are in `ml-service/artifacts/evaluation.json`.
 
+On the held-out code-mixed subset the selected SVM classified the annotation-defined dominant language correctly for 88/100 English-dominant Hinglish rows, 88/100 Hindi-dominant Hinglish rows, and 99/100 Tamil-English rows. This is not token-level code-switch recognition, and mixed Hindi-English errors are material.
+
 ### Confidence and rejection
 
-Rejection thresholds were selected on validation data to maximize coverage while meeting a 0.98 accuracy target on accepted known-language examples, with a 0.25 confidence floor. The selected Linear SVM thresholds are `min_confidence=0.25` and `min_margin=0.3343`; on test it accepted 937/1,000 known-language inputs (93.7% coverage) with 0.987 accuracy on accepted rows. Logistic Regression accepted 947/1,000 (94.7%) with 0.984 accuracy on accepted rows at its own validation-selected thresholds. These are coverage results on known classes; there is no unknown-language test set, so they do not measure unknown false-accept rate. Linear SVM confidence is a normalized decision-score proxy, not a calibrated probability. Thresholds should be retuned on representative ambiguous and out-of-scope inputs before production.
+Rejection thresholds were selected on validation data to maximize coverage while meeting a 0.98 accuracy target on accepted known-language examples, with a 0.25 confidence floor. The selected Linear SVM thresholds are `min_confidence=0.25` and `min_margin=0.3343`; on test it accepted 937/1,000 known-language inputs (93.7% coverage) with 0.987 accuracy on accepted rows. Logistic Regression accepted 947/1,000 (94.7%) with 0.984 accuracy on accepted rows at its own validation-selected thresholds. The thresholds were selected only on known classes; the out-of-scope false-accept result below is post-hoc evaluation, not calibration data. Linear SVM confidence is a normalized decision-score proxy, not a calibrated probability. Thresholds should be retuned on representative ambiguous and out-of-scope validation inputs before production.
+
+### Final audit and unknown-language result
+
+The final audit reproduced the headline results exactly and checked source-pair groups, exact duplicates, and cross-split character n-gram similarity. It also added an 800-row evaluation-only Romanized out-of-scope slice from Bangla, Gujarati, Kannada, Malayalam, Marathi, Punjabi, Sindhi, and Telugu. The SVM rejected 417/800 (52.125%); **383/800 (47.875%) were incorrectly accepted** as one of the four supported languages. Per-language breakdown and source limitations are in [`ml-audit.md`](ml-audit.md) and `ml-service/artifacts/unknown-language-evaluation.json`. This is from the same Bhasha-Abhijnaanam archive family, so it is an unseen-label check, not an independent-source open-set benchmark.
 
 ## Reproducibility
 

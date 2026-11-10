@@ -14,7 +14,7 @@ Node.js + Express ---- Prisma ---- PostgreSQL
         +---- configured speech, translation, and TTS providers
 ```
 
-Provider adapters must identify their upstream service and required credentials. No provider is selected or configured yet.
+Speech-to-text, translation, and text-to-speech adapters use Google Cloud Speech-to-Text v1, Cloud Translation v2, and Cloud Text-to-Speech, configured through `GOOGLE_CLOUD_API_KEY`. The custom language detector remains the local FastAPI model. These are third-party services; the application does not claim to have trained their models. The current Google Speech-to-Text v1 and Text-to-Speech language catalogs do not list Odia support, so Odia voice input and Odia speech playback return an explicit HTTP 503 until an Odia-capable provider is configured. Cloud Translation lists Odia as experimental. A missing key returns HTTP 503 instead of sample or mock output.
 
 ## Language scope
 
@@ -26,6 +26,12 @@ Supported language codes are `hi` (Hindi), `en` (English), `ta` (Tamil), and `or
 - Backend validates requests, handles authentication, persists history, and coordinates service calls.
 - ML service exposes language/script prediction and experiment metadata; model artifacts are generated locally from documented data and are not committed.
 - PostgreSQL stores user and history records. Secrets and provider keys are supplied through environment variables.
+
+## Implemented request flow
+
+The React app records WebM/Opus or Ogg/Opus in the browser and sends it to Express as a bounded multipart request. Express sends the bytes to Google Speech-to-Text and does not persist the audio. For text or the resulting transcript, Express asks the local FastAPI model for language/script evidence, calls Google Cloud Translation using the user's selected source and target languages, then stores only the source/translated text and language metadata in PostgreSQL. Text-to-speech returns provider-generated MP3 bytes for immediate playback. History is account-scoped and can be deleted. The API rejects browser write requests from origins other than the configured frontend.
+
+The external provider key and a PostgreSQL instance are required for a fully functional translation workflow. Provider availability and supported voice/language combinations are controlled by Google Cloud and must be checked in the provisioned account before public release. Browser recording requires HTTPS outside localhost. A second speech/TTS provider is still required to deliver all features for Odia.
 
 ## Quality and privacy
 

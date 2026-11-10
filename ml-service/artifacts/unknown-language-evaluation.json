@@ -1,0 +1,124 @@
+{
+  "generated_at": "2026-11-10T08:41:58.466086+00:00",
+  "dataset_manifest": "artifacts/unknown-language-dataset-manifest.json",
+  "model_sha256": "58aea95a98d01579b1da040e9557ad6a79a6da8932a036cd6c963d9a4694c887",
+  "rows": 800,
+  "supported_labels": [
+    "en",
+    "hi",
+    "or",
+    "ta"
+  ],
+  "unknown_rows_rejected": 417,
+  "unknown_rejection_rate": 0.52125,
+  "unknown_rows_accepted_as_supported": 383,
+  "unknown_false_accept_rate": 0.47875,
+  "predicted_supported_language_counts": {
+    "en": 34,
+    "hi": 141,
+    "or": 42,
+    "ta": 166
+  },
+  "per_unknown_language": {
+    "bn": {
+      "rows": 100,
+      "rejected_as_unknown": 71,
+      "rejection_rate": 0.71,
+      "accepted_as_supported": 29,
+      "predictions": {
+        "en": 20,
+        "hi": 6,
+        "or": 3,
+        "unknown": 71
+      }
+    },
+    "gu": {
+      "rows": 100,
+      "rejected_as_unknown": 69,
+      "rejection_rate": 0.69,
+      "accepted_as_supported": 31,
+      "predictions": {
+        "en": 1,
+        "hi": 14,
+        "or": 14,
+        "ta": 2,
+        "unknown": 69
+      }
+    },
+    "kn": {
+      "rows": 100,
+      "rejected_as_unknown": 51,
+      "rejection_rate": 0.51,
+      "accepted_as_supported": 49,
+      "predictions": {
+        "en": 2,
+        "or": 3,
+        "ta": 44,
+        "unknown": 51
+      }
+    },
+    "ml": {
+      "rows": 100,
+      "rejected_as_unknown": 11,
+      "rejection_rate": 0.11,
+      "accepted_as_supported": 89,
+      "predictions": {
+        "en": 2,
+        "or": 1,
+        "ta": 86,
+        "unknown": 11
+      }
+    },
+    "mr": {
+      "rows": 100,
+      "rejected_as_unknown": 68,
+      "rejection_rate": 0.68,
+      "accepted_as_supported": 32,
+      "predictions": {
+        "en": 2,
+        "hi": 17,
+        "or": 11,
+        "ta": 2,
+        "unknown": 68
+      }
+    },
+    "pa": {
+      "rows": 100,
+      "rejected_as_unknown": 29,
+      "rejection_rate": 0.29,
+      "accepted_as_supported": 71,
+      "predictions": {
+        "en": 1,
+        "hi": 69,
+        "or": 1,
+        "unknown": 29
+      }
+    },
+    "sd": {
+      "rows": 100,
+      "rejected_as_unknown": 58,
+      "rejection_rate": 0.58,
+      "accepted_as_supported": 42,
+      "predictions": {
+        "en": 4,
+        "hi": 35,
+        "or": 2,
+        "ta": 1,
+        "unknown": 58
+      }
+    },
+    "te": {
+      "rows": 100,
+      "rejected_as_unknown": 60,
+      "rejection_rate": 0.6,
+      "accepted_as_supported": 40,
+      "predictions": {
+        "en": 2,
+        "or": 7,
+        "ta": 31,
+        "unknown": 60
+      }
+    }
+  },
+  "limitation": "This is an unseen-label test on Romanized Dakshina examples from the Bhasha-Abhijnaanam archive family, not an independent-source benchmark. False-accept rate is not a general production guarantee."
+}

@@ -14,7 +14,7 @@ export function LanguageSelect({ id, label, value, onChange }: LanguageSelectPro
       {label}
       <select
         id={id}
-        className="rounded-lg border border-slate-300 bg-white px-3 py-2"
+        className="w-full rounded-xl border border-line bg-[#111720] px-3 py-3 text-sm text-slate-100 outline-none transition focus:border-mint/60 focus:ring-2 focus:ring-mint/10"
         value={value}
         onChange={(event) => onChange(event.target.value as LanguageCode)}
       >

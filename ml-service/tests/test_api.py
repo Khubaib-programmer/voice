@@ -1,3 +1,4 @@
+import joblib
 from fastapi.testclient import TestClient
 
 from indic_id import api
@@ -31,3 +32,24 @@ def test_loaded_model_includes_script_evidence(monkeypatch):
     assert response.status_code == 200
     assert response.json()["script"]["script"] == "Devanagari"
     assert response.json()["language"] in {"hi", "unknown"}
+
+
+def test_fresh_fastapi_lifespan_loads_saved_bundle(tmp_path, monkeypatch):
+    examples = []
+    for i in range(12):
+        examples.extend([
+            (f"good morning from london {i}", "en"),
+            (f"नमस्ते भारत दुनिया मित्र {i}", "hi"),
+        ])
+    _, _, _, model = compare_models(examples)
+    artifact = tmp_path / "fresh-model.joblib"
+    joblib.dump({"pipeline": model, "min_confidence": 0.0, "min_margin": 0.0}, artifact)
+    monkeypatch.setenv("MODEL_PATH", str(artifact))
+    monkeypatch.setattr(api, "identifier", None)
+
+    # Entering TestClient starts a new FastAPI lifespan, matching service startup.
+    with TestClient(api.app) as client:
+        assert client.get("/health").json() == {"status": "ok", "model_loaded": True}
+        response = client.post("/predict", json={"text": "नमस्ते भारत दुनिया"})
+    assert response.status_code == 200
+    assert response.json()["candidate_language"] == "hi"
