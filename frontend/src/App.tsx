@@ -149,32 +149,34 @@ export default function App() {
       setError("This browser does not support microphone recording.");
       return;
     }
+    let stream: MediaStream | null = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const context = new AudioContext();
-      const analyser = context.createAnalyser();
-      analyser.fftSize = 256;
-      context.createMediaStreamSource(stream).connect(analyser);
-      audioContextRef.current = context;
-      analyserRef.current = analyser;
+      const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = micStream;
       const mimeType = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/webm", "audio/ogg"]
         .find((type) => MediaRecorder.isTypeSupported(type));
       if (!mimeType) {
-        stream.getTracks().forEach((track) => track.stop());
+        micStream.getTracks().forEach((track) => track.stop());
         setError("This browser cannot record WebM/Opus or Ogg/Opus audio required by the speech provider.");
         return;
       }
-      const recorder = new MediaRecorder(stream, { mimeType });
+      const context = new AudioContext();
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 256;
+      context.createMediaStreamSource(micStream).connect(analyser);
+      audioContextRef.current = context;
+      analyserRef.current = analyser;
+      const recorder = new MediaRecorder(micStream, { mimeType });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
       recorder.onstop = () => {
         setRecordedAudio(new Blob(chunks, { type: mimeType }));
-        stream.getTracks().forEach((track) => track.stop());
+        micStream.getTracks().forEach((track) => track.stop());
         audioStreamRef.current = null;
         setNotice("Recording ready. Select Translate to transcribe and translate it.");
       };
       recorderRef.current = recorder;
-      audioStreamRef.current = stream;
+      audioStreamRef.current = micStream;
       recordingStartedRef.current = Date.now();
       setRecordingSeconds(0);
       setRecordedAudio(null);
@@ -182,6 +184,10 @@ export default function App() {
       recorder.start();
       setRecording(true);
     } catch (cause) {
+      stream?.getTracks().forEach((track) => track.stop());
+      void audioContextRef.current?.close();
+      audioContextRef.current = null;
+      analyserRef.current = null;
       setError(cause instanceof Error && cause.name === "NotAllowedError"
         ? "Microphone access was blocked. Allow microphone access and try again."
         : "Could not start the microphone. Check your browser permissions.");
