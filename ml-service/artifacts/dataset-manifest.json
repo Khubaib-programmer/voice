@@ -1,0 +1,312 @@
+{
+  "generated_at": "2026-11-10T08:12:28.290053+00:00",
+  "file": "data/processed/current.tsv",
+  "file_size_bytes": 1538841,
+  "sha256": "1e435384a09d9e58903ce61edb26afaab3e589c3231597e9c014beac1f77c5bb",
+  "rows": 5000,
+  "unique_language_category_text_rows": 5000,
+  "duplicate_rows_within_language_category": 0,
+  "source_group_count_before_split": 3500,
+  "licensed_source_rows": 4500,
+  "public_domain_source_rows": 500,
+  "verified_real_source_rows": 5000,
+  "dataset_generated_rows": 0,
+  "synthetic_rows": 0,
+  "source_rows": 5000,
+  "language_distribution": {
+    "en": 1000,
+    "hi": 1500,
+    "or": 1000,
+    "ta": 1500
+  },
+  "category_distribution": {
+    "code_mixed": 1500,
+    "native_script": 2000,
+    "romanized": 1500
+  },
+  "origin_distribution": {
+    "licensed_source": 4500,
+    "public_domain_source": 500
+  },
+  "source_license_distribution": {
+    "AI4Bharat/Bhasha-Abhijnaanam -> AI4Bharat manually collected data CC0-1.0": 1000,
+    "AI4Bharat/Bhasha-Abhijnaanam -> Google Dakshina 1.0 CC BY-SA 4.0": 2000,
+    "COMI-LINGUA CC BY-SA 4.0": 1000,
+    "Project Gutenberg ebook 1661 (US public domain; India term expired under Copyright Act s.22)": 500,
+    "community-datasets/offenseval_dravidian Tamil train split, CC BY 4.0": 500
+  },
+  "target_per_applicable_cell": 500,
+  "cells": {
+    "en:native_script": {
+      "licensed_source": 0,
+      "public_domain_source": 500,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "en:code_mixed": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "hi:code_mixed": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "hi:native_script": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "hi:romanized": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "or:code_mixed": {
+      "licensed_source": 0,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 0,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 500
+    },
+    "or:native_script": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "or:romanized": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "ta:code_mixed": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "ta:native_script": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    },
+    "ta:romanized": {
+      "licensed_source": 500,
+      "public_domain_source": 0,
+      "dataset_generated": 0,
+      "verified_real_source_total": 500,
+      "synthetic": 0,
+      "verified_real_source_shortfall": 0
+    }
+  },
+  "model_training_rows": 5000,
+  "excluded_from_primary_training": {
+    "dataset_generated": 0,
+    "synthetic": 0
+  },
+  "source_file_sha256": "1e435384a09d9e58903ce61edb26afaab3e589c3231597e9c014beac1f77c5bb",
+  "selected_model_artifact": {
+    "file": "best_model.joblib",
+    "size_bytes": 17701027,
+    "sha256": "58aea95a98d01579b1da040e9557ad6a79a6da8932a036cd6c963d9a4694c887"
+  },
+  "source_manifests": [
+    {
+      "generated_at": "2026-11-10T08:01:08.391542+00:00",
+      "dataset": "AI4Bharat Bhasha-Abhijnaanam",
+      "source_url": "https://huggingface.co/datasets/ai4bharat/Bhasha-Abhijnaanam",
+      "dataset_revision": "c54a95d9b9d62c891a03bd5da60715df7176b097",
+      "archive_member": "bhasha-abhijnaanam.json",
+      "archive_member_size_bytes": 66171773,
+      "archive_record_count": 88014,
+      "archive_language_source_distribution": {
+        "Hindi:Dakshina": 4616,
+        "Hindi:Flores-200": 1012,
+        "Oriya:Flores-200": 1012,
+        "Oriya:Manually-Collected": 512,
+        "Tamil:Dakshina": 4802,
+        "Tamil:Flores-200": 1012
+      },
+      "requested_per_cell": 500,
+      "seed": 2026,
+      "eligible_paired_source_rows": {
+        "hi": 4605,
+        "ta": 4767,
+        "or": 512
+      },
+      "selected_rows": 3000,
+      "selected_counts": {
+        "hi:native_script": 500,
+        "hi:romanized": 500,
+        "ta:native_script": 500,
+        "ta:romanized": 500,
+        "or:native_script": 500,
+        "or:romanized": 500
+      },
+      "input_archive": "data/raw/bhasha-abhijnaanam.zip",
+      "input_archive_size_bytes": 10706705,
+      "input_archive_sha256": "be4bd82c5b9b54528393bcbf4542a4f7f2ac9ee4fc1a3609f0ed685a1d252c19",
+      "output_file": "data/processed/native-romanized.tsv",
+      "output_size_bytes": 847099,
+      "notes": [
+        "Bhasha-Abhijnaanam is an existing language-identification test set; these selected examples are used as project training/evaluation data, so results are not an independent evaluation on that benchmark.",
+        "Hindi/Tamil rows originate from Dakshina and retain CC BY-SA attribution; Odia rows are manually collected under CC0-1.0."
+      ]
+    },
+    {
+      "generated_at": "2026-11-10T08:01:27.062480+00:00",
+      "dataset": "COMI-LINGUA LID training split",
+      "source_url": "https://github.com/lingo-iitgn/COMI-LINGUA",
+      "license": "CC BY-SA 4.0 (repository license; follow stricter repository term)",
+      "input_file": "data/raw/COMI-LINGUA/LID_train.csv",
+      "input_file_size_bytes": 123492954,
+      "input_file_sha256": "d17e256c92604bbadd4fcbcc7e82035985349551f9889e39afabbde8be8bc85f",
+      "source_row_count": 30487,
+      "eligible_unique_mixed_rows": {
+        "hi": 18421,
+        "en": 931
+      },
+      "seed": 2026,
+      "requested_per_cell": 500,
+      "output": "data/processed/comi-code-mixed.tsv",
+      "size_bytes": 307768,
+      "rows": 1000,
+      "counts": {
+        "hi": 500,
+        "en": 500
+      },
+      "origin": "licensed_source",
+      "synthetic_rows": 0
+    },
+    {
+      "generated_at": "2026-11-10T08:01:08.027335+00:00",
+      "dataset": "Project Gutenberg ebook 1661, The Adventures of Sherlock Holmes",
+      "source_url": "https://www.gutenberg.org/cache/epub/1661/pg1661.txt",
+      "license": "Public domain in the United States; author died 1930 and Indian Copyright Act s.22 provides life plus 60 years for published literary works",
+      "input_path": "data/raw/pg1661.txt",
+      "input_size_bytes": 607606,
+      "input_sha256": "922e2a12ccb43a4c9544c260b2166c6ad2097aeb5957faeee113f173bb857cd0",
+      "eligible_unique_sentences": 4280,
+      "seed": 2026,
+      "selected_rows": 500,
+      "output_path": "data/processed/english-native.tsv",
+      "output_size_bytes": 161113,
+      "synthetic_rows": 0
+    },
+    {
+      "generated_at": "2026-11-10T08:01:08.730644+00:00",
+      "dataset": "OffensEval Dravidian Tamil code-mixed training split",
+      "source_url": "https://huggingface.co/datasets/community-datasets/offenseval_dravidian",
+      "source_revision": "main; exact source parquet sha256 recorded below",
+      "source_parquet_sha256": "35d2af2549699358f3ebc9329370a06238f1c9b07645347f9856d684c19cd942",
+      "license": "CC BY 4.0 (dataset card); attribution required",
+      "source_data_note": "Dataset card identifies YouTube comments and marks collection details as unavailable. Only Tamil-labeled mixed-script rows containing both Tamil Unicode characters and Latin letters are selected; no English-only rows qualify.",
+      "input_file": "data/raw/tamil-code-mixed-train.parquet",
+      "input_size_bytes": 2392028,
+      "seed": 2026,
+      "input_rows": 35139,
+      "source_label_distribution": {
+        "0": 25425,
+        "1": 2906,
+        "2": 2343,
+        "3": 2557,
+        "4": 454,
+        "5": 1454
+      },
+      "invalid_or_empty_rows": 0,
+      "excluded_not_tamil_label_rows": 1454,
+      "eligible_unique_mixed_script_rows": 1556,
+      "selected_rows": 500,
+      "requested_rows": 500,
+      "output_file": "data/processed/tamil-code-mixed.tsv",
+      "output_size_bytes": 223041,
+      "synthetic_rows": 0
+    }
+  ],
+  "train_validation_test_distribution": {
+    "train": {
+      "rows": 3000,
+      "groups": 2100,
+      "language": {
+        "en": 600,
+        "hi": 900,
+        "or": 600,
+        "ta": 900
+      },
+      "category": {
+        "code_mixed": 911,
+        "native_script": 1189,
+        "romanized": 900
+      },
+      "origin": {
+        "licensed_source": 2711,
+        "public_domain_source": 289
+      }
+    },
+    "validation": {
+      "rows": 1000,
+      "groups": 700,
+      "language": {
+        "en": 200,
+        "hi": 300,
+        "or": 200,
+        "ta": 300
+      },
+      "category": {
+        "code_mixed": 289,
+        "native_script": 411,
+        "romanized": 300
+      },
+      "origin": {
+        "licensed_source": 889,
+        "public_domain_source": 111
+      }
+    },
+    "test": {
+      "rows": 1000,
+      "groups": 700,
+      "language": {
+        "en": 200,
+        "hi": 300,
+        "or": 200,
+        "ta": 300
+      },
+      "category": {
+        "code_mixed": 300,
+        "native_script": 400,
+        "romanized": 300
+      },
+      "origin": {
+        "licensed_source": 900,
+        "public_domain_source": 100
+      }
+    }
+  }
+}

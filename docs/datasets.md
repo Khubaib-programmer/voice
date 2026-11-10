@@ -1,30 +1,48 @@
-# Dataset plan and provenance
+# Dataset provenance and preparation
 
-## Scope
+## Scope and current manifest
 
-The classifier is text-only. Project labels are Hindi (`hi`), English (`en`), Tamil (`ta`), and Odia (`or`). The sample target is 500 rows in each applicable language/category cell. Hindi, Tamil, and Odia have native-script, romanized, and code-mixed categories. English uses Latin natively and has no romanized category; it has native/Latin and code-mixed categories. This yields 5,500 applicable target rows. Synthetic augmentation is recorded separately and never counted as verified source text.
+The classifier supports Hindi (`hi`), English (`en`), Tamil (`ta`), and Odia (`or`). English is native Latin script; its romanized cell is N/A. The target is 500 rows in each of 11 applicable cells (5,500 rows total). Counts below are observed after NFC normalization and exact normalized-text deduplication; no target count is forced.
 
-## Candidate sources and verified metadata
+The current dataset contains **5,000 unique source rows**: 2,000 native-script/Latin rows, 1,500 romanized Indic rows, and 1,500 genuine code-mixed rows. Counts by language are English 1,000, Hindi 1,500, Odia 1,000, Tamil 1,500. There are 4,500 CC-licensed-source rows, 500 public-domain-source rows, zero dataset-generated rows, and zero synthetic augmentation rows. The only unfilled cell is Odia code-mixed: 0/500; do not fill it with synthetic or generated text and call it genuine.
 
-- **AI4Bharat IndicCMix:** the dataset card describes the selected Odia and Tamil text fields `native_script_codemixed` and `english`. Its license is listed as MIT. The card says the Indic text is translated from English and the associated F5-TTS audio is synthetic. Treat these examples as dataset-provided generated text, not naturally authored conversation. The dataset is gated behind a Hugging Face information-sharing and access-conditions step. The user has said they will accept the access conditions; local authorization is still to be verified. If available, fetch only the Odia and Tamil parquet files, project only text columns, and never request the audio directory. Keep all variants of a source sentence in one split.
-- **AI4Bharat Bhasha-Abhijnaanam:** its card describes a native and romanized language-identification test set and lists a CC0-1.0 license for manually collected data. Published selected-language counts are Hindi 5,617 native / 4,606 romanized, Odia 1,012 / 512, and Tamil 5,893 / 4,881; the repository archive is listed as 10.7 MB. These are upstream reported counts, not local downloads or project counts. This is a benchmark test set; if examples are used for fitting, they cannot also be represented as an independent benchmark test result.
-- **Google Dakshina 1.0:** provides Hindi and Tamil native-script Wikipedia text and romanization resources, but not Odia. It is licensed CC BY-SA 4.0. Preserve attribution and share-alike obligations for derivatives. Use only needed text files, not the full archive.
+The merged normalized TSV is **1,538,841 bytes**. Its component TSVs total 1,539,021 bytes. Downloaded source files total **137,199,293 bytes**; no audio files were downloaded. Exact source file hashes, file sizes, source/license counts, cell counts, and train/validation/test distributions are stored in `ml-service/artifacts/dataset-manifest.json`. Raw and processed text files are ignored by Git.
 
-- **COMI-LINGUA:** expert-annotated Hindi-English code-mixing. The repository includes a CC BY-SA 4.0 license file while its README states CC BY 4.0; use the stricter repository CC BY-SA 4.0 terms unless the authors clarify the mismatch. The preparation script uses only `LID_train.csv`, requires majority-supported mixed annotations, and derives Hindi-dominant and English-dominant sentence labels separately.
-- **Project Gutenberg ebook 1661:** public-domain-in-the-USA English prose provides English native/Latin samples. The preparation script samples actual source sentences and records the downloaded text file's byte count. Public-domain status varies by jurisdiction; attribution/provenance is retained.
-- **Tanglish Corpus 185k (not used):** the uploader claims CC BY 4.0, but the card says it contains scraped third-party YouTube/Reddit comments. That license claim is not independently verified as rights to the source comments, so it is excluded from the project training set.
+| Language | Native script / Latin | Romanized | Genuine code-mixed |
+|---|---:|---:|---:|
+| English (`en`) | 500 | N/A | 500 English-dominant Hindi-English |
+| Hindi (`hi`) | 500 | 500 | 500 Hindi-dominant Hindi-English |
+| Tamil (`ta`) | 500 | 500 | 500 Tamil-English |
+| Odia (`or`) | 500 | 500 | 0; source gap |
 
-For academic attribution, cite the Bhasha-Abhijnaanam paper (Madhani et al., 2023, “Bhasha-Abhijnaanam: Native-script and Romanized Language Identification for 22 Indic Languages”), the Dakshina paper (Roark et al., 2020, “Processing South Asian Languages Written in the Latin Script: The Dakshina Dataset”), and Sheth et al. (2025), “COMI-LINGUA: Expert Annotated Large-Scale Dataset for Multitask NLP in Hindi-English Code-Mixing.” Preserve each source license’s attribution/share-alike terms in any redistributed dataset or derived corpus.
+English-only text is not labelled code-mixed. COMI-LINGUA samples require token annotations containing both Hindi and English; Tamil code-mixed samples require both Tamil Unicode characters and Latin letters in the same comment. IndicCMix was not used: it is gated, its text is dataset-generated, and no Hugging Face credential was available in the workspace. Its audio was not downloaded.
 
-Downloaded and prepared so far: 4,500 unique source samples (3,000 paired native/romanized Bhasha examples, 1,000 COMI-LINGUA code-mixed examples, and 500 Project Gutenberg English sentences), from 10,706,705 archive bytes, 123,492,954 CSV bytes, and 607,606 English text bytes. The merged deduplicated TSV is 1,294,635 bytes. Synthetic augmentation count: 0. Remaining target cells are Tamil/Odia code-mixed (1,000). IndicCMix remote parquet listings for these files are approximately 42.7 MB (Odia) and 44.6 MB (Tamil); local byte counts remain zero pending successful gated access. Hindi and English code-mixed cells are already present in the COMI-LINGUA output. Source URLs: [IndicCMix](https://huggingface.co/datasets/ai4bharat/IndicCMix), [Bhasha-Abhijnaanam](https://huggingface.co/datasets/ai4bharat/Bhasha-Abhijnaanam), [COMI-LINGUA](https://github.com/lingo-iitgn/COMI-LINGUA), [Dakshina documentation](https://github.com/google-research-datasets/dakshina), and [Project Gutenberg ebook 1661](https://www.gutenberg.org/ebooks/1661).
+## Sources, licenses, and observed counts
 
-The ML pipeline must record dataset version/configuration, source URL, license, retrieval date, selected fields, filtering, deduplication, language labels, and split strategy. Keep raw and processed datasets out of Git. Avoid placing personal or restricted data in examples.
+### Bhasha-Abhijnaanam and Dakshina
 
-## Preparation requirements
+The downloaded ZIP is 10,706,705 bytes and contains one JSON member, `bhasha-abhijnaanam.json` (66,171,773 uncompressed bytes), with 88,014 records. Fields inspected: `language`, `native sentence`, `romanized sentence`, `script`, `source`, and `unique_identifier`. Selected source pairs were Hindi/Dakshina (4,616 raw pairs; 4,605 unique after normalized pair deduplication), Tamil/Dakshina (4,802 raw; 4,767 unique), and Oriya/Manually-Collected (512 raw and unique). The sampler selected 500 paired records per language, giving 3,000 rows across native and romanized categories. Pair variants share a group ID and remain in one split.
 
-1. Record source version, URL, license, retrieval date, file size, selected columns, source counts, filtering, deduplication, and split strategy.
-2. Select text-only parquet columns; exclude the audio field and audio directories.
-3. Preserve native and romanized script distinctions. Do not generate unmarked samples and call them real.
-4. Deduplicate before splitting and keep paired/variant source sentences together.
-5. Record counts by language, category, and origin. Do not count synthetic augmentation toward the verified target.
-6. Hold out code-mixed and ambiguous examples for evaluation where source data allows. Never publish unrun metrics.
+The Bhasha card identifies the manually collected data as CC0-1.0. Hindi/Tamil Dakshina source text carries CC BY-SA 4.0 attribution and share-alike terms. Because Bhasha-Abhijnaanam is itself an existing language-identification benchmark, these reused examples are project train/validation/test data and are not presented as an independent evaluation on that benchmark. Sources: [Bhasha-Abhijnaanam](https://huggingface.co/datasets/ai4bharat/Bhasha-Abhijnaanam) and [Google Dakshina](https://github.com/google-research-datasets/dakshina).
+
+### Hindi-English code-mixed data
+
+From the 123,492,954-byte COMI-LINGUA `LID_train.csv`, the preparation script selected 500 Hindi-dominant and 500 English-dominant samples. Both languages must have token annotations from at least two annotators; balanced annotations are rejected. Thus English-only lines are not selected as code-mixed. The project follows the repository's CC BY-SA 4.0 license because the repository license is stricter than the README's CC BY 4.0 statement. The source hash, eligible counts, row counts, and output bytes are in the source manifest. Source: [COMI-LINGUA repository](https://github.com/lingo-iitgn/COMI-LINGUA).
+
+### Tamil-English code-mixed data
+
+The downloaded Tamil-only train parquet is 2,392,028 bytes and contains 35,139 rows with `text` and integer `label` columns. The source split has 1,454 rows labeled `not-Tamil`; they were excluded. Requiring at least one Tamil Unicode character and at least one Latin letter yielded 1,574 candidate rows, 1,556 unique after NFC/casefold/whitespace deduplication. The sampler selected 500 real mixed-script comments. English-only rows cannot pass this script check. The dataset card declares CC BY 4.0 and cites the DravidianCodeMix research corpus; it identifies YouTube comments but leaves initial collection details unavailable. The source may contain offensive language, and the comments may not represent general or formal speech. Source: [OffensEval Dravidian Tamil split and license](https://huggingface.co/datasets/community-datasets/offenseval_dravidian).
+
+Latin-only Tanglish was excluded because automatic language distinction from English-only text was not reliable enough for this project, and other uploader claims did not establish clear rights over underlying social-media posts. No synthetic Tanglish was created.
+
+### English native/Latin data
+
+The downloaded Project Gutenberg text for ebook 1661 is 607,606 bytes. After removing Gutenberg framing, 4,280 unique source sentences passed the length filter; 500 actual sentences were sampled. The source is public domain in the United States. Arthur Conan Doyle died in 1930; India’s Copyright Act section 22 provides a term of 60 years from the start of the year following the author’s death for published literary works, so the term expired in India in 1990. See the [Gutenberg item](https://www.gutenberg.org/ebooks/1661), [Gutenberg license policy](https://www.gutenberg.org/policy/license.html), and [Indian Copyright Act section 22](https://copyright.gov.in/Copyright_Act_1957/chapter_v.html).
+
+## Cleaning, groups, and split
+
+Text is normalized to Unicode NFC, with whitespace normalized. Indic code points and joiners are preserved. Empty, replacement-character, and NUL-containing records are rejected. Exact normalized duplicates within each language/category cell are removed before splitting. Group IDs join source sentence pairs and exact text duplicates across sources; no source group is shared across train, validation, or test.
+
+The 5,000-row dataset was split with `StratifiedGroupKFold` into 3,000 train, 1,000 validation, and 1,000 test rows (2,100, 700, and 700 groups respectively). The manifest records each split’s language, category, and origin distributions. The Tamil code-mix source provided no pair variants; its normalized exact-text hash is the group ID. This split evaluates language identification, not translation quality or production audio recognition.
+
+The raw ZIP, CSV, Gutenberg text, Tamil parquet, and prepared TSVs are not committed. Keep all required source attributions and license terms with any redistributed dataset or derived corpus.

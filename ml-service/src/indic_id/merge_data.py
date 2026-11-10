@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import unicodedata
 from pathlib import Path
 
 FIELDS = ("text", "language", "category", "origin", "source", "group_id")
@@ -20,7 +21,11 @@ def merge(inputs: list[Path], output: Path) -> dict[str, int]:
                 if tuple(reader.fieldnames or ()) != FIELDS:
                     raise ValueError(f"{path} must have columns {FIELDS}")
                 for row in reader:
-                    key = (row["language"], row["category"], " ".join(row["text"].casefold().split()))
+                    text = unicodedata.normalize("NFC", " ".join(row["text"].split()))
+                    if not text or "\ufffd" in text or "\x00" in text:
+                        raise ValueError(f"Empty or invalid text in {path}")
+                    row["text"] = text
+                    key = (row["language"], row["category"], " ".join(text.casefold().split()))
                     if key in seen:
                         duplicates += 1
                         continue

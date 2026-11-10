@@ -2,7 +2,7 @@
 
 A full-stack academic project for speech transcription, language identification, translation, and speech playback for Hindi (`hi`), English (`en`), Tamil (`ta`), and Odia (`or`). The language selector scope is limited to these four languages.
 
-> **Implementation status:** Project foundation only. No model has been trained, no speech or translation provider has been integrated, and no deployment is live yet. Metrics will be reported only after reproducible evaluation.
+> **Implementation status:** The custom four-language text identifier has been trained and evaluated on 5,000 real-source samples. The Odia code-mixed cell remains empty because no suitable verified natural source was available. Speech recognition, translation, user accounts, history, and public deployment are still to be integrated.
 
 ## Planned architecture
 
@@ -11,7 +11,7 @@ A full-stack academic project for speech transcription, language identification,
 - `ml-service/`: Python/FastAPI service for custom script and language identification using character n-gram TF-IDF and scikit-learn classifiers.
 - `docs/`: architecture, dataset provenance, experiments, API, and deployment notes.
 
-The language identifier is an original project component. Its dataset target is 500 samples per language and category (native script, romanized where applicable, and code-mixed). English is not romanizable into Latin script; per the project decision, that cell is marked not applicable rather than mislabeled. Speech recognition, translation, and text-to-speech will use explicitly identified existing engines or APIs; they will not be described as models trained from scratch.
+The language identifier is an original project component. Its target is 500 samples per language and applicable category. English romanization is N/A. The current dataset has 5,000 verified real rows out of 5,500 targeted; Odia code-mixed is 0/500. The test-set Linear SVM accuracy is 0.969 and macro F1 is 0.9676 under a group-aware 60/20/20 split; see [ML results](docs/ml-experiments.md) and the [dataset manifest](ml-service/artifacts/dataset-manifest.json). Speech recognition, translation, and text-to-speech will use explicitly identified existing engines or APIs; they will not be described as models trained from scratch.
 
 ## Setup
 

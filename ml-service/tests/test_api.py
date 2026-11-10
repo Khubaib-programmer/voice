@@ -25,7 +25,7 @@ def test_loaded_model_includes_script_evidence(monkeypatch):
             (f"good morning from london {i}", "en"),
             (f"नमस्ते भारत दुनिया मित्र {i}", "hi"),
         ])
-    _, models = compare_models(examples)
+    _, models, _, _ = compare_models(examples)
     monkeypatch.setattr(api, "identifier", LanguageIdentifier(models["linear_svm"]))
     response = TestClient(api.app).post("/predict", json={"text": "नमस्ते भारत"})
     assert response.status_code == 200

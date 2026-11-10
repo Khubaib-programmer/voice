@@ -2,8 +2,11 @@
 
 import argparse
 import csv
+from collections import Counter
+import hashlib
 import json
 import random
+import unicodedata
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,6 +26,8 @@ def prepare(archive: Path, output: Path, limit: int = 500, seed: int = 2026):
             raise ValueError("Archive contains no JSON data file")
         data = json.load(zipped.open(json_name))["data"]
 
+    raw_source_counts = Counter((row.get("language", ""), row.get("source", "")) for row in data)
+
     selected = []
     available = {}
     for language, (dataset_language, allowed_source, license_text) in SOURCES.items():
@@ -30,8 +35,8 @@ def prepare(archive: Path, output: Path, limit: int = 500, seed: int = 2026):
         for row in data:
             if row.get("language") != dataset_language or row.get("source") != allowed_source:
                 continue
-            native = (row.get("native sentence") or "").strip()
-            romanized = (row.get("romanized sentence") or "").strip()
+            native = unicodedata.normalize("NFC", (row.get("native sentence") or "").strip())
+            romanized = unicodedata.normalize("NFC", (row.get("romanized sentence") or "").strip())
             if native and romanized:
                 candidates.append((row["unique_identifier"], native, romanized))
         available[language] = len(candidates)
@@ -65,7 +70,16 @@ def prepare(archive: Path, output: Path, limit: int = 500, seed: int = 2026):
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "dataset": "AI4Bharat Bhasha-Abhijnaanam",
+        "source_url": "https://huggingface.co/datasets/ai4bharat/Bhasha-Abhijnaanam",
         "dataset_revision": DATASET_REVISION,
+        "archive_member": json_name,
+        "archive_member_size_bytes": next(info.file_size for info in zipfile.ZipFile(archive).infolist() if info.filename == json_name),
+        "archive_record_count": len(data),
+        "archive_language_source_distribution": {
+            f"{language}:{source}": count
+            for (language, source), count in sorted(raw_source_counts.items())
+            if language in {"Hindi", "Tamil", "Oriya"}
+        },
         "requested_per_cell": limit,
         "seed": seed,
         "eligible_paired_source_rows": available,
@@ -73,6 +87,7 @@ def prepare(archive: Path, output: Path, limit: int = 500, seed: int = 2026):
         "selected_counts": {f"{language}:{category}": limit for language in SOURCES for category in ("native_script", "romanized")},
         "input_archive": str(archive.resolve()),
         "input_archive_size_bytes": archive.stat().st_size,
+        "input_archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
         "output_file": str(output.resolve()),
         "output_size_bytes": output.stat().st_size,
         "notes": [

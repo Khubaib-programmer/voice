@@ -25,6 +25,8 @@ data/processed/
 models/*.joblib
 models/*.pkl
 ml-service/artifacts/*.joblib
+ml-service/artifacts/**/*.joblib
+ml-service/artifacts/real-source-run/
 ml-service/data/raw/
 ml-service/data/processed/
 *.parquet

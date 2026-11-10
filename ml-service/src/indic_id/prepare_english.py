@@ -6,6 +6,7 @@ import hashlib
 import json
 import random
 import re
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -19,7 +20,8 @@ def _sentences(text: str):
     if end >= 0:
         text = text[:end]
     text = re.sub(r"\s+", " ", text)
-    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if 35 <= len(s.strip()) <= 400]
+    sentences = [unicodedata.normalize("NFC", s).strip() for s in re.split(r"(?<=[.!?])\s+", text)]
+    return [s for s in sentences if 35 <= len(s) <= 400]
 
 
 def prepare(source: Path, output: Path, limit: int = 500, seed: int = 2026):
@@ -36,14 +38,15 @@ def prepare(source: Path, output: Path, limit: int = 500, seed: int = 2026):
         writer.writerow(("text", "language", "category", "origin", "source", "group_id"))
         for sentence in chosen:
             group_id = hashlib.sha256(sentence.casefold().encode("utf-8")).hexdigest()
-            writer.writerow((sentence, "en", "native_script", "licensed_source", "Project Gutenberg ebook 1661 (public domain in the USA)", group_id))
+            writer.writerow((sentence, "en", "native_script", "public_domain_source", "Project Gutenberg ebook 1661 (US public domain; India term expired under Copyright Act s.22)", group_id))
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "dataset": "Project Gutenberg ebook 1661, The Adventures of Sherlock Holmes",
         "source_url": "https://www.gutenberg.org/cache/epub/1661/pg1661.txt",
-        "license": "Public domain in the United States; verify local law before redistribution",
+        "license": "Public domain in the United States; author died 1930 and Indian Copyright Act s.22 provides life plus 60 years for published literary works",
         "input_path": str(source.resolve()),
         "input_size_bytes": len(raw),
+        "input_sha256": hashlib.sha256(raw).hexdigest(),
         "eligible_unique_sentences": len(candidates),
         "seed": seed,
         "selected_rows": len(chosen),

@@ -1,90 +1,126 @@
 {
-  "generated_at": "2026-11-10T07:37:13.080840+00:00",
+  "generated_at": "2026-11-10T08:01:34.630349+00:00",
   "file": "data/processed/current.tsv",
-  "file_size_bytes": 1294635,
-  "rows": 4500,
+  "file_size_bytes": 1538841,
+  "sha256": "1e435384a09d9e58903ce61edb26afaab3e589c3231597e9c014beac1f77c5bb",
+  "rows": 5000,
   "licensed_source_rows": 4500,
+  "public_domain_source_rows": 500,
+  "verified_real_source_rows": 5000,
   "dataset_generated_rows": 0,
   "synthetic_rows": 0,
-  "source_rows": 4500,
+  "source_rows": 5000,
+  "language_distribution": {
+    "en": 1000,
+    "hi": 1500,
+    "or": 1000,
+    "ta": 1500
+  },
+  "category_distribution": {
+    "code_mixed": 1500,
+    "native_script": 2000,
+    "romanized": 1500
+  },
+  "origin_distribution": {
+    "licensed_source": 4500,
+    "public_domain_source": 500
+  },
+  "source_license_distribution": {
+    "AI4Bharat/Bhasha-Abhijnaanam -> AI4Bharat manually collected data CC0-1.0": 1000,
+    "AI4Bharat/Bhasha-Abhijnaanam -> Google Dakshina 1.0 CC BY-SA 4.0": 2000,
+    "COMI-LINGUA CC BY-SA 4.0": 1000,
+    "Project Gutenberg ebook 1661 (US public domain; India term expired under Copyright Act s.22)": 500,
+    "community-datasets/offenseval_dravidian Tamil train split, CC BY 4.0": 500
+  },
   "target_per_applicable_cell": 500,
   "cells": {
     "en:native_script": {
-      "licensed_source": 500,
+      "licensed_source": 0,
+      "public_domain_source": 500,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "en:code_mixed": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "hi:code_mixed": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "hi:native_script": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "hi:romanized": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "or:code_mixed": {
       "licensed_source": 0,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 0,
+      "verified_real_source_total": 0,
       "synthetic": 0,
-      "source_shortfall": 500
+      "verified_real_source_shortfall": 500
     },
     "or:native_script": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "or:romanized": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "ta:code_mixed": {
-      "licensed_source": 0,
+      "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 0,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 500
+      "verified_real_source_shortfall": 0
     },
     "ta:native_script": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     },
     "ta:romanized": {
       "licensed_source": 500,
+      "public_domain_source": 0,
       "dataset_generated": 0,
-      "source_total": 500,
+      "verified_real_source_total": 500,
       "synthetic": 0,
-      "source_shortfall": 0
+      "verified_real_source_shortfall": 0
     }
   }
 }

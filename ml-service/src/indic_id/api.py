@@ -20,12 +20,21 @@ class PredictionRequest(BaseModel):
 
 def load_model():
     global identifier
-    path = Path(os.getenv("MODEL_PATH", "artifacts/linear_svm.joblib"))
+    path = Path(os.getenv("MODEL_PATH", "artifacts/real-source-run/best_model.joblib"))
     if path.exists():
+        payload = joblib.load(path)
+        if isinstance(payload, dict) and "pipeline" in payload:
+            model = payload["pipeline"]
+            default_confidence = payload.get("min_confidence", 0.55)
+            default_margin = payload.get("min_margin", 0.10)
+        else:
+            model = payload
+            default_confidence = 0.55
+            default_margin = 0.10
         identifier = LanguageIdentifier(
-            joblib.load(path),
-            float(os.getenv("MIN_CONFIDENCE", "0.55")),
-            float(os.getenv("MIN_MARGIN", "0.10")),
+            model,
+            float(os.getenv("MIN_CONFIDENCE", str(default_confidence))),
+            float(os.getenv("MIN_MARGIN", str(default_margin))),
         )
 
 

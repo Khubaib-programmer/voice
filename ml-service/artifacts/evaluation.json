@@ -1,0 +1,655 @@
+{
+  "generated_at": "2026-11-10T08:12:28.294581+00:00",
+  "source_file": "data/processed/current.tsv",
+  "source_file_size_bytes": 1538841,
+  "source_file_sha256": "1e435384a09d9e58903ce61edb26afaab3e589c3231597e9c014beac1f77c5bb",
+  "training_rows": 5000,
+  "runtime": {
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "processor": "arm",
+    "python": "3.12.16",
+    "scikit_learn": "1.9.1",
+    "latency_method": "single-example predict after 50 warm-up calls per measured split/category"
+  },
+  "class_counts": {
+    "en": 1000,
+    "hi": 1500,
+    "or": 1000,
+    "ta": 1500
+  },
+  "category_counts": {
+    "code_mixed": 1500,
+    "native_script": 2000,
+    "romanized": 1500
+  },
+  "origin_counts": {
+    "licensed_source": 4500,
+    "public_domain_source": 500
+  },
+  "split_strategy": "stratified_group_train_validation_test_60_20_20",
+  "split_distribution": {
+    "train": {
+      "rows": 3000,
+      "groups": 2100,
+      "language": {
+        "en": 600,
+        "hi": 900,
+        "or": 600,
+        "ta": 900
+      },
+      "category": {
+        "code_mixed": 911,
+        "native_script": 1189,
+        "romanized": 900
+      },
+      "origin": {
+        "licensed_source": 2711,
+        "public_domain_source": 289
+      }
+    },
+    "validation": {
+      "rows": 1000,
+      "groups": 700,
+      "language": {
+        "en": 200,
+        "hi": 300,
+        "or": 200,
+        "ta": 300
+      },
+      "category": {
+        "code_mixed": 289,
+        "native_script": 411,
+        "romanized": 300
+      },
+      "origin": {
+        "licensed_source": 889,
+        "public_domain_source": 111
+      }
+    },
+    "test": {
+      "rows": 1000,
+      "groups": 700,
+      "language": {
+        "en": 200,
+        "hi": 300,
+        "or": 200,
+        "ta": 300
+      },
+      "category": {
+        "code_mixed": 300,
+        "native_script": 400,
+        "romanized": 300
+      },
+      "origin": {
+        "licensed_source": 900,
+        "public_domain_source": 100
+      }
+    }
+  },
+  "metrics_by_model": {
+    "logistic_regression": {
+      "sample_count": 1000,
+      "accuracy": 0.963,
+      "macro_f1": 0.9609542335165753,
+      "per_language_f1": {
+        "en": 0.9191919191919192,
+        "hi": 0.9470198675496688,
+        "or": 0.9826302729528535,
+        "ta": 0.9949748743718593
+      },
+      "confusion_matrix": [
+        [
+          182,
+          17,
+          1,
+          0
+        ],
+        [
+          11,
+          286,
+          3,
+          0
+        ],
+        [
+          1,
+          1,
+          198,
+          0
+        ],
+        [
+          2,
+          0,
+          1,
+          297
+        ]
+      ],
+      "labels": [
+        "en",
+        "hi",
+        "or",
+        "ta"
+      ],
+      "latency_ms": {
+        "mean": 0.46615720395493554,
+        "p50": 0.44270800572121516,
+        "p95": 0.6451669978559949,
+        "samples": 1000,
+        "warmup_calls": 50,
+        "batch_size": 1
+      },
+      "validation_macro_f1_for_selection": 0.9601677083043223,
+      "category_metrics": {
+        "native_script": {
+          "sample_count": 400,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "per_language_f1": {
+            "en": 1.0,
+            "hi": 1.0,
+            "or": 1.0,
+            "ta": 1.0
+          },
+          "confusion_matrix": [
+            [
+              100,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              100,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              100,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              100
+            ]
+          ],
+          "labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ],
+          "latency_ms": {
+            "mean": 0.45615111990628066,
+            "p50": 0.4274580060155131,
+            "p95": 0.6380839986377396,
+            "samples": 400,
+            "warmup_calls": 50,
+            "batch_size": 1
+          }
+        },
+        "romanized": {
+          "sample_count": 300,
+          "accuracy": 0.9833333333333333,
+          "macro_f1": 0.9882747068676717,
+          "per_language_f1": {
+            "hi": 0.9849246231155779,
+            "or": 0.9849246231155779,
+            "ta": 0.9949748743718593
+          },
+          "confusion_matrix": [
+            [
+              98,
+              1,
+              0
+            ],
+            [
+              1,
+              98,
+              0
+            ],
+            [
+              0,
+              0,
+              99
+            ]
+          ],
+          "labels": [
+            "hi",
+            "or",
+            "ta"
+          ],
+          "latency_ms": {
+            "mean": 0.4461654733798544,
+            "p50": 0.4219590045977384,
+            "p95": 0.6066659989301115,
+            "samples": 300,
+            "warmup_calls": 50,
+            "batch_size": 1
+          }
+        },
+        "code_mixed": {
+          "sample_count": 300,
+          "accuracy": 0.8933333333333333,
+          "macro_f1": 0.8993921693024435,
+          "per_language_f1": {
+            "en": 0.8497409326424871,
+            "hi": 0.8585365853658536,
+            "ta": 0.98989898989899
+          },
+          "confusion_matrix": [
+            [
+              82,
+              17,
+              0
+            ],
+            [
+              10,
+              88,
+              0
+            ],
+            [
+              1,
+              0,
+              98
+            ]
+          ],
+          "labels": [
+            "en",
+            "hi",
+            "ta"
+          ],
+          "latency_ms": {
+            "mean": 0.45790176634909585,
+            "p50": 0.436166999861598,
+            "p95": 0.610541996138636,
+            "samples": 300,
+            "warmup_calls": 50,
+            "batch_size": 1
+          }
+        }
+      },
+      "known_input_rejection": {
+        "thresholds": {
+          "min_confidence": 0.25,
+          "min_margin": 0.12195853617277426
+        },
+        "validation_selection": {
+          "target_accuracy": 0.98,
+          "selected_on_validation": {
+            "min_confidence": 0.25,
+            "min_margin": 0.12195853617277426,
+            "coverage": 0.95,
+            "accuracy_on_accepted_rows": 0.9821052631578947,
+            "accepted_rows": 950
+          }
+        },
+        "test_rows": 1000,
+        "accepted_rows": 947,
+        "rejected_as_unknown_or_ambiguous": 53,
+        "coverage": 0.947,
+        "accuracy_on_accepted_rows": 0.9841605068637803,
+        "note": "The test set contains known-language examples only; this measures rejection coverage, not false acceptance of unknown languages."
+      },
+      "split_strategy": "stratified_group_train_validation_test_60_20_20",
+      "group_leakage_detected": false,
+      "split_distribution": {
+        "train": {
+          "rows": 3000,
+          "groups": 2100,
+          "language": {
+            "en": 600,
+            "hi": 900,
+            "or": 600,
+            "ta": 900
+          },
+          "category": {
+            "code_mixed": 911,
+            "native_script": 1189,
+            "romanized": 900
+          },
+          "origin": {
+            "licensed_source": 2711,
+            "public_domain_source": 289
+          }
+        },
+        "validation": {
+          "rows": 1000,
+          "groups": 700,
+          "language": {
+            "en": 200,
+            "hi": 300,
+            "or": 200,
+            "ta": 300
+          },
+          "category": {
+            "code_mixed": 289,
+            "native_script": 411,
+            "romanized": 300
+          },
+          "origin": {
+            "licensed_source": 889,
+            "public_domain_source": 111
+          }
+        },
+        "test": {
+          "rows": 1000,
+          "groups": 700,
+          "language": {
+            "en": 200,
+            "hi": 300,
+            "or": 200,
+            "ta": 300
+          },
+          "category": {
+            "code_mixed": 300,
+            "native_script": 400,
+            "romanized": 300
+          },
+          "origin": {
+            "licensed_source": 900,
+            "public_domain_source": 100
+          }
+        }
+      }
+    },
+    "linear_svm": {
+      "sample_count": 1000,
+      "accuracy": 0.969,
+      "macro_f1": 0.9675747938901821,
+      "per_language_f1": {
+        "en": 0.9330024813895782,
+        "hi": 0.9547738693467337,
+        "or": 0.9875311720698254,
+        "ta": 0.994991652754591
+      },
+      "confusion_matrix": [
+        [
+          188,
+          11,
+          1,
+          0
+        ],
+        [
+          12,
+          285,
+          2,
+          1
+        ],
+        [
+          1,
+          1,
+          198,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          298
+        ]
+      ],
+      "labels": [
+        "en",
+        "hi",
+        "or",
+        "ta"
+      ],
+      "latency_ms": {
+        "mean": 0.46579026406107005,
+        "p50": 0.44512499880511314,
+        "p95": 0.6470839944086038,
+        "samples": 1000,
+        "warmup_calls": 50,
+        "batch_size": 1
+      },
+      "validation_macro_f1_for_selection": 0.9665719212581761,
+      "category_metrics": {
+        "native_script": {
+          "sample_count": 400,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "per_language_f1": {
+            "en": 1.0,
+            "hi": 1.0,
+            "or": 1.0,
+            "ta": 1.0
+          },
+          "confusion_matrix": [
+            [
+              100,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              100,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              100,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              100
+            ]
+          ],
+          "labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ],
+          "latency_ms": {
+            "mean": 0.45984082731592935,
+            "p50": 0.4327909991843626,
+            "p95": 0.6570409968844615,
+            "samples": 400,
+            "warmup_calls": 50,
+            "batch_size": 1
+          }
+        },
+        "romanized": {
+          "sample_count": 300,
+          "accuracy": 0.98,
+          "macro_f1": 0.9849075343045192,
+          "per_language_f1": {
+            "hi": 0.9797979797979798,
+            "or": 0.9849246231155779,
+            "ta": 0.99
+          },
+          "confusion_matrix": [
+            [
+              97,
+              1,
+              1
+            ],
+            [
+              1,
+              98,
+              0
+            ],
+            [
+              0,
+              0,
+              99
+            ]
+          ],
+          "labels": [
+            "hi",
+            "or",
+            "ta"
+          ],
+          "latency_ms": {
+            "mean": 0.44858372668386437,
+            "p50": 0.42508299520704895,
+            "p95": 0.6006249968777411,
+            "samples": 300,
+            "warmup_calls": 50,
+            "batch_size": 1
+          }
+        },
+        "code_mixed": {
+          "sample_count": 300,
+          "accuracy": 0.9166666666666666,
+          "macro_f1": 0.9197989949748745,
+          "per_language_f1": {
+            "en": 0.88,
+            "hi": 0.8844221105527639,
+            "ta": 0.9949748743718593
+          },
+          "confusion_matrix": [
+            [
+              88,
+              11,
+              0
+            ],
+            [
+              11,
+              88,
+              0
+            ],
+            [
+              1,
+              0,
+              99
+            ]
+          ],
+          "labels": [
+            "en",
+            "hi",
+            "ta"
+          ],
+          "latency_ms": {
+            "mean": 0.48619584665478516,
+            "p50": 0.4612080010701902,
+            "p95": 0.6428749984479509,
+            "samples": 300,
+            "warmup_calls": 50,
+            "batch_size": 1
+          }
+        }
+      },
+      "known_input_rejection": {
+        "thresholds": {
+          "min_confidence": 0.25,
+          "min_margin": 0.3342549208649863
+        },
+        "validation_selection": {
+          "target_accuracy": 0.98,
+          "selected_on_validation": {
+            "min_confidence": 0.25,
+            "min_margin": 0.3342549208649863,
+            "coverage": 0.95,
+            "accuracy_on_accepted_rows": 0.9863157894736843,
+            "accepted_rows": 950
+          }
+        },
+        "test_rows": 1000,
+        "accepted_rows": 937,
+        "rejected_as_unknown_or_ambiguous": 63,
+        "coverage": 0.937,
+        "accuracy_on_accepted_rows": 0.9871931696905016,
+        "note": "The test set contains known-language examples only; this measures rejection coverage, not false acceptance of unknown languages."
+      },
+      "split_strategy": "stratified_group_train_validation_test_60_20_20",
+      "group_leakage_detected": false,
+      "split_distribution": {
+        "train": {
+          "rows": 3000,
+          "groups": 2100,
+          "language": {
+            "en": 600,
+            "hi": 900,
+            "or": 600,
+            "ta": 900
+          },
+          "category": {
+            "code_mixed": 911,
+            "native_script": 1189,
+            "romanized": 900
+          },
+          "origin": {
+            "licensed_source": 2711,
+            "public_domain_source": 289
+          }
+        },
+        "validation": {
+          "rows": 1000,
+          "groups": 700,
+          "language": {
+            "en": 200,
+            "hi": 300,
+            "or": 200,
+            "ta": 300
+          },
+          "category": {
+            "code_mixed": 289,
+            "native_script": 411,
+            "romanized": 300
+          },
+          "origin": {
+            "licensed_source": 889,
+            "public_domain_source": 111
+          }
+        },
+        "test": {
+          "rows": 1000,
+          "groups": 700,
+          "language": {
+            "en": 200,
+            "hi": 300,
+            "or": 200,
+            "ta": 300
+          },
+          "category": {
+            "code_mixed": 300,
+            "native_script": 400,
+            "romanized": 300
+          },
+          "origin": {
+            "licensed_source": 900,
+            "public_domain_source": 100
+          }
+        }
+      }
+    }
+  },
+  "selected_model": "linear_svm",
+  "selection_rule": "highest validation macro F1; test metrics are not used for selection",
+  "evaluation_note": "Candidate test metrics are computed using models fitted on train only. The selected model artifact is refit on train+validation after test evaluation; the test set is never used to fit or select it.",
+  "saved_model": "artifacts/real-source-run/best_model.joblib",
+  "saved_model_size_bytes": 17701027,
+  "saved_model_sha256": "58aea95a98d01579b1da040e9557ad6a79a6da8932a036cd6c963d9a4694c887",
+  "dataset_manifest": "artifacts/dataset-manifest.json",
+  "confidence_rejection": {
+    "min_confidence": 0.25,
+    "min_margin": 0.3342549208649863,
+    "validation_selection": {
+      "target_accuracy": 0.98,
+      "selected_on_validation": {
+        "min_confidence": 0.25,
+        "min_margin": 0.3342549208649863,
+        "coverage": 0.95,
+        "accuracy_on_accepted_rows": 0.9863157894736843,
+        "accepted_rows": 950
+      }
+    },
+    "note": "Linear SVM confidence is a normalized decision-score proxy, not a calibrated probability; thresholds are selected on known-language validation data and do not measure unknown false acceptance."
+  },
+  "limitations": [
+    "The Odia code-mixed category has no verified natural source rows and is absent from primary training.",
+    "Tamil-English code-mixed source rows are mixed-script cases only; Latin-only Tanglish examples were excluded because automatic distinction from English-only text is not sufficiently reliable.",
+    "The Hindi-English and Tamil-English sources are social-media comments and may not represent formal or spoken language.",
+    "All available rows were used; the original per-cell 500-row target is reported as a target, not forced where source data is unavailable."
+  ]
+}
