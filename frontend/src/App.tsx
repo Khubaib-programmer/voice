@@ -46,12 +46,17 @@ export default function App() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [working, setWorking] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [waveform, setWaveform] = useState<number[]>(Array(32).fill(0.08));
   const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [copied, setCopied] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const recordingStartedRef = useRef(0);
 
   const refreshHistory = useCallback(async () => {
     if (!user) return;
@@ -77,7 +82,34 @@ export default function App() {
 
   useEffect(() => () => {
     audioStreamRef.current?.getTracks().forEach((track) => track.stop());
+    void audioContextRef.current?.close();
   }, []);
+
+  useEffect(() => {
+    if (!recording) return;
+    let frame = 0;
+    let lastPaint = 0;
+    const samples = new Uint8Array(analyserRef.current?.fftSize ?? 0);
+    const draw = (time: number) => {
+      if (time - lastPaint > 55 && analyserRef.current && samples.length) {
+        analyserRef.current.getByteTimeDomainData(samples);
+        const band = Math.max(1, Math.floor(samples.length / 32));
+        setWaveform(Array.from({ length: 32 }, (_, index) => {
+          let energy = 0;
+          for (let i = index * band; i < Math.min(samples.length, (index + 1) * band); i++) {
+            const amplitude = (samples[i] - 128) / 128;
+            energy += amplitude * amplitude;
+          }
+          return Math.min(1, Math.max(0.08, Math.sqrt(energy / band) * 2.8));
+        }));
+        setRecordingSeconds(Math.floor((Date.now() - recordingStartedRef.current) / 1000));
+        lastPaint = time;
+      }
+      frame = requestAnimationFrame(draw);
+    };
+    frame = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(frame);
+  }, [recording]);
 
   async function submitAuth(event: FormEvent) {
     event.preventDefault();
@@ -103,6 +135,10 @@ export default function App() {
   function stopRecording() {
     recorderRef.current?.stop();
     setRecording(false);
+    setWaveform(Array(32).fill(0.08));
+    void audioContextRef.current?.close();
+    audioContextRef.current = null;
+    analyserRef.current = null;
   }
 
   async function toggleRecording() {
@@ -115,6 +151,12 @@ export default function App() {
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const context = new AudioContext();
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 256;
+      context.createMediaStreamSource(stream).connect(analyser);
+      audioContextRef.current = context;
+      analyserRef.current = analyser;
       const mimeType = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/webm", "audio/ogg"]
         .find((type) => MediaRecorder.isTypeSupported(type));
       if (!mimeType) {
@@ -133,6 +175,8 @@ export default function App() {
       };
       recorderRef.current = recorder;
       audioStreamRef.current = stream;
+      recordingStartedRef.current = Date.now();
+      setRecordingSeconds(0);
       setRecordedAudio(null);
       setResult(null);
       recorder.start();
@@ -294,9 +338,12 @@ export default function App() {
                       <button disabled={sourceLanguage === "or" && !recording} title={sourceLanguage === "or" && !recording ? "Odia voice input is not available with the configured provider." : undefined} onClick={() => void toggleRecording()} className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${recording ? "border-rose-400/25 bg-rose-400/10 text-rose-300" : "border-white/[0.08] bg-white/[0.025] text-slate-400 hover:border-mint/25 hover:text-mint"}`}>
                         {recording ? <><MicOff size={14} /> Stop recording</> : <><Mic size={14} /> Record voice</>}
                       </button>
-                      {recording && <span className="flex items-center gap-2 text-[11px] text-rose-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" /> Recording</span>}
+                      {recording && <span className="flex items-center gap-2 font-mono text-[11px] text-rose-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" /> REC {String(Math.floor(recordingSeconds / 60)).padStart(2, "0")}:{String(recordingSeconds % 60).padStart(2, "0")}</span>}
                       {!recording && recordedAudio && <span className="flex items-center gap-1.5 text-[11px] text-mint"><Check size={13} /> Voice ready</span>}
                     </div>
+                    {recording && <div role="img" aria-label="Live microphone waveform" className="mt-4 flex h-10 items-center justify-center gap-[3px] overflow-hidden rounded-lg bg-white/[0.025] px-3">
+                      {waveform.map((level, index) => <motion.span key={index} className="w-1 rounded-full bg-rose-300/80" animate={{ height: `${Math.max(10, level * 34)}px`, opacity: 0.45 + level * 0.5 }} transition={{ duration: 0.08 }} />)}
+                    </div>}
                   </div>
                   <div className="flex min-h-[255px] flex-col p-5 sm:p-6">
                     <div className="mb-4 flex items-center justify-between"><span className="text-xs font-medium text-slate-400">Translation</span>{result && <span className="inline-flex items-center gap-1.5 text-[10px] text-slate-500"><Languages size={12} /> {languageName(result.targetLanguage)}</span>}</div>
@@ -323,7 +370,7 @@ export default function App() {
 
             <section className="mt-5 grid gap-4 sm:grid-cols-3">
               <FeatureCard icon={<AudioLines size={16} />} title="Voice to text" text="Record from your browser microphone." />
-              <FeatureCard icon={<Languages size={16} />} title="12 language directions" text="Move between four supported languages." />
+              <FeatureCard icon={<Languages size={16} />} title="12 language directions" text="Translate between Hindi, English, Tamil and Odia." />
               <FeatureCard icon={<Headphones size={16} />} title="Listen back" text="Play the translated voice output." />
             </section>
             <div className="mt-7 flex items-center justify-center gap-2 text-[10px] text-slate-700"><Clock3 size={12} /> History is saved to your account. Audio recordings are not stored.</div>

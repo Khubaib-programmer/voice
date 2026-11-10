@@ -1,124 +1,244 @@
 {
-  "generated_at": "2026-11-10T08:41:58.466086+00:00",
-  "dataset_manifest": "artifacts/unknown-language-dataset-manifest.json",
-  "model_sha256": "58aea95a98d01579b1da040e9557ad6a79a6da8932a036cd6c963d9a4694c887",
-  "rows": 800,
-  "supported_labels": [
-    "en",
-    "hi",
-    "or",
-    "ta"
-  ],
-  "unknown_rows_rejected": 417,
-  "unknown_rejection_rate": 0.52125,
-  "unknown_rows_accepted_as_supported": 383,
-  "unknown_false_accept_rate": 0.47875,
-  "predicted_supported_language_counts": {
-    "en": 34,
-    "hi": 141,
-    "or": 42,
-    "ta": 166
+  "generated_at": "2026-11-10T09:22:47.580318+00:00",
+  "method": "open-set rejection threshold calibration; classifier weights and primary held-out language metrics are unchanged",
+  "primary_training_data_sha256": "1e435384a09d9e58903ce61edb26afaab3e589c3231597e9c014beac1f77c5bb",
+  "unknown_dataset_manifest": "data/processed/unknown-eval.tsv.manifest.json",
+  "unknown_dataset_sha256": "2ecace0eba5be28d1ee0445adc4c70709aeeb692a2393f654ad027df7a5f73a6",
+  "unknown_source": "Bhasha-Abhijnaanam Romanized Dakshina out-of-scope evaluation slice",
+  "unknown_total_rows": 800,
+  "unknown_language_split": {
+    "calibration_rows": 400,
+    "heldout_rows": 400,
+    "counts_by_language_calibration": {
+      "bn": 50,
+      "gu": 50,
+      "kn": 50,
+      "ml": 50,
+      "mr": 50,
+      "pa": 50,
+      "sd": 50,
+      "te": 50
+    },
+    "counts_by_language_heldout": {
+      "bn": 50,
+      "gu": 50,
+      "kn": 50,
+      "ml": 50,
+      "mr": 50,
+      "pa": 50,
+      "sd": 50,
+      "te": 50
+    },
+    "split_rule": "within each language, sort by SHA-256(source_record_id); first half calibrates, second half is untouched evaluation"
   },
-  "per_unknown_language": {
-    "bn": {
-      "rows": 100,
-      "rejected_as_unknown": 71,
-      "rejection_rate": 0.71,
-      "accepted_as_supported": 29,
-      "predictions": {
-        "en": 20,
-        "hi": 6,
-        "or": 3,
-        "unknown": 71
+  "precalibration_full_slice_result": {
+    "thresholds": {
+      "min_confidence": 0.25,
+      "min_margin": 0.3342549208649863
+    },
+    "metrics": {
+      "rows": 800,
+      "accepted_as_supported": 383,
+      "rejected_as_unknown": 417,
+      "false_accept_rate": 0.47875,
+      "rejection_rate": 0.52125,
+      "by_unknown_language": {
+        "bn": {
+          "rows": 100,
+          "rejected": 71,
+          "accepted_as_supported": {
+            "en": 20,
+            "hi": 6,
+            "or": 3
+          }
+        },
+        "gu": {
+          "rows": 100,
+          "rejected": 69,
+          "accepted_as_supported": {
+            "en": 1,
+            "hi": 14,
+            "or": 14,
+            "ta": 2
+          }
+        },
+        "kn": {
+          "rows": 100,
+          "rejected": 51,
+          "accepted_as_supported": {
+            "en": 2,
+            "or": 3,
+            "ta": 44
+          }
+        },
+        "ml": {
+          "rows": 100,
+          "rejected": 11,
+          "accepted_as_supported": {
+            "en": 2,
+            "or": 1,
+            "ta": 86
+          }
+        },
+        "mr": {
+          "rows": 100,
+          "rejected": 68,
+          "accepted_as_supported": {
+            "en": 2,
+            "hi": 17,
+            "or": 11,
+            "ta": 2
+          }
+        },
+        "pa": {
+          "rows": 100,
+          "rejected": 29,
+          "accepted_as_supported": {
+            "en": 1,
+            "hi": 69,
+            "or": 1
+          }
+        },
+        "sd": {
+          "rows": 100,
+          "rejected": 58,
+          "accepted_as_supported": {
+            "en": 4,
+            "hi": 35,
+            "or": 2,
+            "ta": 1
+          }
+        },
+        "te": {
+          "rows": 100,
+          "rejected": 60,
+          "accepted_as_supported": {
+            "en": 2,
+            "or": 7,
+            "ta": 31
+          }
+        }
       }
     },
-    "gu": {
-      "rows": 100,
-      "rejected_as_unknown": 69,
-      "rejection_rate": 0.69,
-      "accepted_as_supported": 31,
-      "predictions": {
-        "en": 1,
-        "hi": 14,
-        "or": 14,
-        "ta": 2,
-        "unknown": 69
-      }
-    },
-    "kn": {
-      "rows": 100,
-      "rejected_as_unknown": 51,
-      "rejection_rate": 0.51,
-      "accepted_as_supported": 49,
-      "predictions": {
-        "en": 2,
-        "or": 3,
-        "ta": 44,
-        "unknown": 51
-      }
-    },
-    "ml": {
-      "rows": 100,
-      "rejected_as_unknown": 11,
-      "rejection_rate": 0.11,
-      "accepted_as_supported": 89,
-      "predictions": {
-        "en": 2,
-        "or": 1,
-        "ta": 86,
-        "unknown": 11
-      }
-    },
-    "mr": {
-      "rows": 100,
-      "rejected_as_unknown": 68,
-      "rejection_rate": 0.68,
-      "accepted_as_supported": 32,
-      "predictions": {
-        "en": 2,
-        "hi": 17,
-        "or": 11,
-        "ta": 2,
-        "unknown": 68
-      }
-    },
-    "pa": {
-      "rows": 100,
-      "rejected_as_unknown": 29,
-      "rejection_rate": 0.29,
-      "accepted_as_supported": 71,
-      "predictions": {
-        "en": 1,
-        "hi": 69,
-        "or": 1,
-        "unknown": 29
-      }
-    },
-    "sd": {
-      "rows": 100,
-      "rejected_as_unknown": 58,
-      "rejection_rate": 0.58,
-      "accepted_as_supported": 42,
-      "predictions": {
-        "en": 4,
-        "hi": 35,
-        "or": 2,
-        "ta": 1,
-        "unknown": 58
-      }
-    },
-    "te": {
-      "rows": 100,
-      "rejected_as_unknown": 60,
-      "rejection_rate": 0.6,
-      "accepted_as_supported": 40,
-      "predictions": {
-        "en": 2,
-        "or": 7,
-        "ta": 31,
-        "unknown": 60
+    "note": "Historical result using the old threshold across all 800 rows; it is descriptive and was not used for threshold selection."
+  },
+  "selected_threshold": {
+    "min_confidence": 0.4401612939540062,
+    "min_margin": 0.3342549208649863,
+    "confidence_kind": "normalized_decision_score_proxy; not a calibrated probability",
+    "validation_selection": {
+      "min_confidence": 0.4401612939540062,
+      "min_margin": 0.3342549208649863,
+      "known_validation_coverage": 0.917,
+      "known_validation_accuracy_on_accepted": 0.9890948745910578,
+      "code_mixed_validation_coverage": 0.8027681660899654,
+      "unknown_calibration_rejection_rate": 0.83,
+      "unknown_calibration_accepted": 68,
+      "unknown_calibration_rows": 400
+    }
+  },
+  "heldout_known_language_test": {
+    "rows": 1000,
+    "accepted_as_supported": 930,
+    "rejected_as_unknown": 70,
+    "accepted_coverage": 0.93,
+    "correct_among_accepted": 920,
+    "accuracy_among_accepted": 0.989247311827957,
+    "by_category": {
+      "code_mixed": {
+        "rows": 300,
+        "accepted": 250,
+        "coverage": 0.8333333333333334,
+        "accuracy_among_accepted": 0.96
+      },
+      "native_script": {
+        "rows": 400,
+        "accepted": 397,
+        "coverage": 0.9925,
+        "accuracy_among_accepted": 1.0
+      },
+      "romanized": {
+        "rows": 300,
+        "accepted": 283,
+        "coverage": 0.9433333333333334,
+        "accuracy_among_accepted": 1.0
       }
     }
   },
-  "limitation": "This is an unseen-label test on Romanized Dakshina examples from the Bhasha-Abhijnaanam archive family, not an independent-source benchmark. False-accept rate is not a general production guarantee."
+  "heldout_unknown_language_test": {
+    "rows": 400,
+    "accepted_as_supported": 82,
+    "rejected_as_unknown": 318,
+    "false_accept_rate": 0.205,
+    "rejection_rate": 0.795,
+    "by_unknown_language": {
+      "bn": {
+        "rows": 50,
+        "rejected": 47,
+        "accepted_as_supported": {
+          "en": 3
+        }
+      },
+      "gu": {
+        "rows": 50,
+        "rejected": 50,
+        "accepted_as_supported": {}
+      },
+      "kn": {
+        "rows": 50,
+        "rejected": 45,
+        "accepted_as_supported": {
+          "ta": 5
+        }
+      },
+      "ml": {
+        "rows": 50,
+        "rejected": 12,
+        "accepted_as_supported": {
+          "en": 1,
+          "ta": 37
+        }
+      },
+      "mr": {
+        "rows": 50,
+        "rejected": 48,
+        "accepted_as_supported": {
+          "hi": 2
+        }
+      },
+      "pa": {
+        "rows": 50,
+        "rejected": 27,
+        "accepted_as_supported": {
+          "hi": 23
+        }
+      },
+      "sd": {
+        "rows": 50,
+        "rejected": 45,
+        "accepted_as_supported": {
+          "en": 1,
+          "hi": 4
+        }
+      },
+      "te": {
+        "rows": 50,
+        "rejected": 44,
+        "accepted_as_supported": {
+          "or": 1,
+          "ta": 5
+        }
+      }
+    }
+  },
+  "model_artifact": {
+    "path": "artifacts/real-source-run/best_model.joblib",
+    "size_bytes": 17701793,
+    "sha256": "2a7f9b1e370d7ef3bea013c305f7e789d3fd711a619fcc3b87aa56cdd153126a"
+  },
+  "limitations": [
+    "The 400-row OOD holdout contains eight Romanized Dakshina language labels from the Bhasha-Abhijnaanam archive family; it is not an independent-source or global unknown-language benchmark.",
+    "The rejection threshold is tuned to these calibration domains and reduces known-language acceptance coverage; calibration should be repeated with production-like OOD and ambiguous text.",
+    "Odia code-mixed text has no verified training/evaluation examples."
+  ]
 }

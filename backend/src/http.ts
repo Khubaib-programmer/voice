@@ -15,7 +15,9 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     res.status(status).json({ error: "Recording is too large. Keep recordings under 12 MB." });
     return;
   }
-  const message = status >= 500 ? "The request could not be completed." : (error as Error).message;
+  const message = Number((error as { status?: number }).status)
+    ? (error as Error).message
+    : "The request could not be completed.";
   res.status(status).json({ error: message });
 };
 

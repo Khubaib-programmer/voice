@@ -34,7 +34,8 @@ router.post("/login", asyncRoute(async (req, res) => {
 }));
 
 router.post("/logout", (_req, res) => {
-  res.clearCookie(COOKIE_NAME, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/" });
+  const { maxAge: _maxAge, ...cookieOptions } = sessionCookie();
+  res.clearCookie(COOKIE_NAME, cookieOptions);
   res.status(204).end();
 });
 

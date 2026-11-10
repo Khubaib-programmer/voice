@@ -134,8 +134,8 @@
   "source_file_sha256": "1e435384a09d9e58903ce61edb26afaab3e589c3231597e9c014beac1f77c5bb",
   "selected_model_artifact": {
     "file": "best_model.joblib",
-    "size_bytes": 17701027,
-    "sha256": "58aea95a98d01579b1da040e9557ad6a79a6da8932a036cd6c963d9a4694c887"
+    "size_bytes": 17701793,
+    "sha256": "2a7f9b1e370d7ef3bea013c305f7e789d3fd711a619fcc3b87aa56cdd153126a"
   },
   "source_manifests": [
     {

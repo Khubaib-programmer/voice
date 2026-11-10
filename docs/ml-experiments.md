@@ -11,7 +11,7 @@ Run: 2026-11-10, Python 3.12.16, scikit-learn 1.9.1, macOS 27.0.1 ARM64. The nor
 | TF-IDF + Logistic Regression | 0.963 | 0.9610 | 0.9192 | 0.9470 | 0.9826 | 0.9950 | 0.466 ms | 0.645 ms |
 | TF-IDF + Linear SVM | **0.969** | **0.9676** | **0.9330** | **0.9548** | **0.9875** | **0.9950** | 0.466 ms | 0.647 ms |
 
-The selected model is Linear SVM, chosen by validation macro F1 (0.9666 vs. 0.9602). The saved model bundle is 17,701,027 bytes and contains the TF-IDF pipeline plus validation-selected rejection thresholds. The saved pipeline is refit on train+validation after evaluation; test metrics above are for candidate models trained on train only. Latency is single-example prediction on this development Mac after 50 warm-up calls; it is not a public deployment benchmark.
+The selected model is Linear SVM, chosen by validation macro F1 (0.9666 vs. 0.9602). The calibrated saved model bundle is 17,701,793 bytes and contains the TF-IDF pipeline plus its separately calibrated rejection threshold. The saved pipeline is refit on train+validation after evaluation; test metrics above are for candidate models trained on train only. Latency is single-example prediction on this development Mac after 50 warm-up calls; it is not a public deployment benchmark.
 
 ### Category results
 
@@ -27,11 +27,11 @@ On the held-out code-mixed subset the selected SVM classified the annotation-def
 
 ### Confidence and rejection
 
-Rejection thresholds were selected on validation data to maximize coverage while meeting a 0.98 accuracy target on accepted known-language examples, with a 0.25 confidence floor. The selected Linear SVM thresholds are `min_confidence=0.25` and `min_margin=0.3343`; on test it accepted 937/1,000 known-language inputs (93.7% coverage) with 0.987 accuracy on accepted rows. Logistic Regression accepted 947/1,000 (94.7%) with 0.984 accuracy on accepted rows at its own validation-selected thresholds. The thresholds were selected only on known classes; the out-of-scope false-accept result below is post-hoc evaluation, not calibration data. Linear SVM confidence is a normalized decision-score proxy, not a calibrated probability. Thresholds should be retuned on representative ambiguous and out-of-scope validation inputs before production.
+The original threshold (`min_confidence=0.25`, `min_margin=0.3343`) used known-language validation only and yielded 93.7% known test coverage. A separate open-set calibration script now tunes confidence using known validation plus 400 OOD calibration rows, requiring at least 80% known validation coverage, 98% accepted accuracy, and 80% code-mixed validation coverage. The saved SVM uses `min_confidence=0.4401612940`, `min_margin=0.3343`; known test coverage is 93%, with 0.9892 accuracy among accepted rows. On the untouched 400-row OOD holdout, 318 were rejected (79.5% rejection, 20.5% false accepts). Category known test coverage is 99.25% native-script, 94.33% Romanized, and 83.33% code-mixed. Linear SVM confidence is a normalized decision-score proxy, not a calibrated probability. These results do not generalize beyond the sampled source domains.
 
 ### Final audit and unknown-language result
 
-The final audit reproduced the headline results exactly and checked source-pair groups, exact duplicates, and cross-split character n-gram similarity. It also added an 800-row evaluation-only Romanized out-of-scope slice from Bangla, Gujarati, Kannada, Malayalam, Marathi, Punjabi, Sindhi, and Telugu. The SVM rejected 417/800 (52.125%); **383/800 (47.875%) were incorrectly accepted** as one of the four supported languages. Per-language breakdown and source limitations are in [`ml-audit.md`](ml-audit.md) and `ml-service/artifacts/unknown-language-evaluation.json`. This is from the same Bhasha-Abhijnaanam archive family, so it is an unseen-label check, not an independent-source open-set benchmark.
+The final audit reproduced headline results and checked source-pair groups, exact duplicates, and cross-split character n-gram similarity. On the OOD slice, the old threshold falsely accepted 383/800 (47.875%); after calibration, the untouched holdout falsely accepts 82/400 (20.5%). The full-slice post-calibration figure is descriptive because it includes the calibration half. Per-language breakdown and source limitations are in [`ml-audit.md`](ml-audit.md) and `ml-service/artifacts/unknown-language-evaluation.json`.
 
 ## Reproducibility
 

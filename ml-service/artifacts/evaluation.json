@@ -628,23 +628,19 @@
   "selection_rule": "highest validation macro F1; test metrics are not used for selection",
   "evaluation_note": "Candidate test metrics are computed using models fitted on train only. The selected model artifact is refit on train+validation after test evaluation; the test set is never used to fit or select it.",
   "saved_model": "artifacts/real-source-run/best_model.joblib",
-  "saved_model_size_bytes": 17701027,
-  "saved_model_sha256": "58aea95a98d01579b1da040e9557ad6a79a6da8932a036cd6c963d9a4694c887",
+  "saved_model_size_bytes": 17701793,
+  "saved_model_sha256": "2a7f9b1e370d7ef3bea013c305f7e789d3fd711a619fcc3b87aa56cdd153126a",
   "dataset_manifest": "artifacts/dataset-manifest.json",
   "confidence_rejection": {
-    "min_confidence": 0.25,
+    "min_confidence": 0.4401612939540062,
     "min_margin": 0.3342549208649863,
-    "validation_selection": {
-      "target_accuracy": 0.98,
-      "selected_on_validation": {
-        "min_confidence": 0.25,
-        "min_margin": 0.3342549208649863,
-        "coverage": 0.95,
-        "accuracy_on_accepted_rows": 0.9863157894736843,
-        "accepted_rows": 950
-      }
-    },
-    "note": "Linear SVM confidence is a normalized decision-score proxy, not a calibrated probability; thresholds are selected on known-language validation data and do not measure unknown false acceptance."
+    "known_validation_coverage": 0.917,
+    "known_validation_accuracy_on_accepted": 0.9890948745910578,
+    "code_mixed_validation_coverage": 0.8027681660899654,
+    "unknown_calibration_rejection_rate": 0.83,
+    "unknown_calibration_accepted": 68,
+    "unknown_calibration_rows": 400,
+    "note": "Calibrated using a known-language validation set and a separate OOD calibration half. The SVM confidence remains a normalized decision-score proxy, not a calibrated probability. See unknown-language-evaluation.json for untouched holdout results and coverage tradeoffs."
   },
   "limitations": [
     "The Odia code-mixed category has no verified natural source rows and is absent from primary training.",

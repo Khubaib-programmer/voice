@@ -6,7 +6,7 @@ The repository includes Dockerfiles for the React site, Express API, and FastAPI
 
 1. Provision a Linux host with Docker Engine and the Docker Compose plugin. Create DNS `A`/`AAAA` records for a domain you control.
 2. Copy `.env.example` to `.env`. Set `APP_DOMAIN`, a strong URL-safe `POSTGRES_PASSWORD` (letters, digits, hyphens, underscores), a random `COOKIE_SECRET` of at least 32 characters, and a Google Cloud API key with Speech-to-Text, Translation, and Text-to-Speech APIs enabled. Do not commit `.env`.
-3. Place the trained bundle at `ml-service/artifacts/real-source-run/best_model.joblib`; verify SHA-256 `58aea95a98d01579b1da040e9557ad6a79a6da8932a036cd6c963d9a4694c887`. This 17.7 MB binary is generated locally and excluded from Git.
+3. Place the trained bundle at `ml-service/artifacts/real-source-run/best_model.joblib`; for the audited open-set calibration verify SHA-256 `2a7f9b1e370d7ef3bea013c305f7e789d3fd711a619fcc3b87aa56cdd153126a`. This 17.7 MB binary is generated locally and excluded from Git.
 4. From the repository root, run `docker compose up --build -d`. The API container applies the committed Prisma migration before starting. Only Caddy's HTTP/HTTPS ports are public; PostgreSQL and the model API remain on the private compose network.
 5. Verify `https://$APP_DOMAIN/`, `https://$APP_DOMAIN/health`, and the container health states. Create an account and verify all provider APIs are enabled and billed for the Google Cloud project.
 
@@ -18,4 +18,4 @@ The app sends supported-language recordings to Google Cloud Speech-to-Text in me
 
 ## Deployment status and limits
 
-Container configuration is prepared, but this project has **not** been published to a public host from this workspace. No hosting account, DNS domain, remote server, production database, or Google Cloud credential was available. Public deployment requires those external resources. No live URL or successful production provider call is claimed. Before academic demonstration, provision those resources and validate signup, PostgreSQL persistence, microphone recording over HTTPS, provider calls, and history against the deployed environment.
+Container configuration is prepared, but this project has **not** been published to a public host from this workspace. No hosting account, DNS domain, remote server, production database, or Google Cloud credential was available. Public deployment requires those external resources. The Caddy edge configuration enables HTTPS certificate management and baseline security headers; Express limits cross-origin requests to the configured frontend and uses secure, HttpOnly production session cookies. No live URL or successful production provider call is claimed. Before academic demonstration, provision those resources and validate signup, PostgreSQL persistence, microphone recording over HTTPS, provider calls, and history against the deployed environment.
