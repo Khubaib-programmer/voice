@@ -11,6 +11,7 @@ const schema = z.object({
   ML_SERVICE_URL: z.string().url().default("http://127.0.0.1:8000"),
   GOOGLE_CLOUD_PROJECT: z.string().optional().default(""),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().optional().default(""),
+  DEV_MOCK_PROVIDERS: z.coerce.boolean().default(true),
   MAX_AUDIO_BYTES: z.coerce.number().int().positive().default(10 * 1024 * 1024),
 });
 
