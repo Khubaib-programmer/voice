@@ -9,14 +9,21 @@ import { errorHandler } from "./http.js";
 import authRoutes from "./routes/auth.js";
 import translationRoutes from "./routes/translations.js";
 
+const allowedOrigins = new Set([
+  config.FRONTEND_ORIGIN,
+  ...(config.NODE_ENV !== "production"
+    ? ["http://localhost:5173", "http://127.0.0.1:5173"]
+    : []),
+]);
+
 export const app = express();
 app.disable("x-powered-by");
 if (config.NODE_ENV === "production") app.set("trust proxy", 1);
 app.use(helmet());
-app.use(cors({ origin: config.FRONTEND_ORIGIN, credentials: true }));
+app.use(cors({ origin: Array.from(allowedOrigins), credentials: true }));
 app.use((req, res, next) => {
   const origin = req.get("origin");
-  if (origin && origin !== config.FRONTEND_ORIGIN && !["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+  if (origin && !allowedOrigins.has(origin) && !["GET", "HEAD", "OPTIONS"].includes(req.method)) {
     res.status(403).json({ error: "Request origin is not allowed." });
     return;
   }
