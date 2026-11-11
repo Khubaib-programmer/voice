@@ -1,25 +1,24 @@
 # Deployment
 
-## Deployment entry point
+The repository includes a production-oriented Docker Compose stack for the React/Vite frontend, Express backend, FastAPI model service, PostgreSQL, and Caddy HTTPS edge. Public deployment is not claimed until a host, domain, credentials, and real user flows have been configured and verified.
 
-Use the detailed [production setup checklist](production-setup-checklist.md) for required environment variables, Google Cloud ADC/IAM setup, voice support, hosting recommendations, smoke tests, and the no-deploy gate.
+## Production setup
 
-## Container deployment with HTTPS
+1. Provision a host that can run Docker Compose and has enough memory for the Python/scikit-learn model. Configure DNS for the deployment host.
+2. Copy `.env.example` to `.env`. Set `APP_DOMAIN`, `POSTGRES_PASSWORD`, `COOKIE_SECRET` (at least 32 random characters), and `GROQ_API_KEY`. Model defaults can remain as listed or be set with `GROQ_STT_MODEL` and `GROQ_TRANSLATION_MODEL`.
+3. Keep `.env` out of Git. Groq credentials are injected only into the backend container. Do not set a `VITE_GROQ_API_KEY` or otherwise place provider secrets in the frontend build.
+4. Securely provide the excluded model artifact at `ml-service/artifacts/real-source-run/best_model.joblib` and verify the SHA-256 recorded in `docs/ml-audit.md`.
+5. Review provider data handling, quotas and billing in the Groq account. On a newly created empty database only, build the backend image and explicitly initialize the schema with `docker compose run --rm backend npm run db:deploy`. Then deploy with `docker compose up -d --build`, and inspect `docker compose ps` and logs. The backend container does not automatically run migrations at startup.
+6. Verify HTTPS via Caddy, `/health`, account creation/login/logout, text detection, live translations, microphone transcription for Hindi/English/Tamil, target speech voice availability, and no translation persistence.
 
-The repository includes Dockerfiles for the React site, Express API, and FastAPI model service, plus PostgreSQL and Caddy in `docker-compose.yml`. Caddy obtains and renews HTTPS certificates after the server's DNS points at the host and ports 80/443 are reachable.
+Production Express permits only the configured `FRONTEND_ORIGIN`, trusts one reverse proxy, and sets Secure/HttpOnly session cookies. Caddy provisions HTTPS certificates. Health checks gate on PostgreSQL and FastAPI model readiness. The pending history-removal migration drops the legacy `TranslationHistory` table and deletes all rows in it. Never run it against a database with data that must be preserved. The database migration status could not be verified from this workspace; back up and inspect the target database before any schema migration. The backend image deliberately leaves migrations to an explicit operator step.
 
-1. Provision a Linux host with Docker Engine and the Docker Compose plugin. Create DNS `A`/`AAAA` records for a domain you control.
-2. Copy `.env.example` to `.env`. Set `APP_DOMAIN`, a strong URL-safe `POSTGRES_PASSWORD` (letters, digits, hyphens, underscores), a random `COOKIE_SECRET` of at least 32 characters, and `GOOGLE_CLOUD_PROJECT`. Configure the Compose ADC secret at `secrets/google-service-account.json` as described in the checklist. Do not commit `.env` or the service-account JSON.
-3. Place the trained bundle at `ml-service/artifacts/real-source-run/best_model.joblib`; for the audited open-set calibration verify SHA-256 `2a7f9b1e370d7ef3bea013c305f7e789d3fd711a619fcc3b87aa56cdd153126a`. This 17.7 MB binary is generated locally and excluded from Git.
-4. From the repository root, run `docker compose up --build -d`. The API container applies the committed Prisma migration before starting. Only Caddy's HTTP/HTTPS ports are public; PostgreSQL and the model API remain on the private compose network.
-5. Verify `https://$APP_DOMAIN/`, `https://$APP_DOMAIN/health`, and the container health states. Create an account and verify all provider APIs are enabled and billed for the Google Cloud project.
+## Provider capability and limitations
 
-To inspect logs, use `docker compose logs -f backend ml-service caddy`. Back up the `postgres_data` and `caddy_data` volumes. Upgrade schema by adding a Prisma migration and deploying it before new application code. Keep Docker, OS packages, Node/Python dependencies, and provider credentials updated.
+Groq Whisper receives recordings without a forced language hint and performs its own multilingual transcription attempt. Users may record speech in any of the four product languages; Odia transcription has not been independently verified, so the app does not claim verified Odia voice recognition ([Groq speech-to-text docs](https://console.groq.com/docs/speech-to-text)). Groq chat completions provide translation for the four supported target codes; actual language quality and availability depend on the selected model and provider account. Browser SpeechSynthesis is used for playback, so the device must have a matching locale voice. If an Odia (`or-IN`) voice is missing, playback displays an error and does not silently use English. These capabilities do not mean a live provider call has passed: use `cd backend && npm run providers:smoke` after setting credentials and a real audio sample.
 
-## Provider and data requirements
+The app retains account data only. Audio is held in backend memory during provider submission; text and translated results stay in the user's page state. Groq receives audio/text required for its respective inference calls. Confirm institutional/privacy requirements and provider account controls before public use.
 
-The app sends supported-language recordings to Google Cloud Speech-to-Text in memory. Transcribed and typed text is sent to the local custom language detector and Google Cloud Translation. TTS text is sent to Google Cloud Text-to-Speech. The app itself does not retain raw audio. Configure Google Cloud data handling, quotas, budget alerts, and regional policy to meet your institution's privacy requirements. Google Cloud's current Speech-to-Text v1 catalog and Text-to-Speech voice catalog do not list Odia (`or-IN`); this implementation returns a clear unavailable response for Odia voice input/playback. Google Translation lists Odia as experimental. An Odia-capable speech/TTS provider and validation are required before claiming complete four-language voice coverage.
+## Current deployment status
 
-## Deployment status and limits
-
-Container configuration is prepared, but this project has **not** been published to a public host from this workspace. No hosting account, DNS domain, remote server, production database, or Google Cloud ADC identity was available. Public deployment requires those external resources. The Caddy edge configuration enables HTTPS certificate management and baseline security headers; Express limits cross-origin requests to the configured frontend and uses secure, HttpOnly production session cookies. Health checks now test the PostgreSQL connection and model readiness. No live URL or successful production provider call is claimed. Before academic demonstration, provision those resources and validate signup, PostgreSQL persistence, microphone recording over HTTPS, provider calls, and history against the deployed environment.
+The codebase is deployment-ready at the configuration level, but no public URL or live hosted workflow is verified from this workspace. An actual Groq key, production host, DNS and public network verification are required before reporting a deployment as complete.

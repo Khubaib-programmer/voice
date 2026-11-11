@@ -32,7 +32,6 @@ ml-service/data/raw/
 ml-service/data/processed/
 *.parquet
 backend/secrets/
-google-service-account*.json
 
 # OS/editor files
 .DS_Store

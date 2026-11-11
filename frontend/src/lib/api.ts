@@ -21,7 +21,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function submitAudioRecording<T>(blob: Blob, sourceLanguage: string, targetLanguage: string): Promise<T> {
+export function submitAudioRecording<T>(blob: Blob): Promise<T> {
   const mimeType = blob.type.split(";", 1)[0].trim().toLowerCase();
   if (!blob.size) return Promise.reject(new Error("The recording is empty. Record a short message and try again."));
   if (mimeType !== "audio/webm" && mimeType !== "audio/ogg") {
@@ -30,7 +30,5 @@ export function submitAudioRecording<T>(blob: Blob, sourceLanguage: string, targ
   const extension = mimeType === "audio/ogg" ? "ogg" : "webm";
   const form = new FormData();
   form.append("audio", blob, `recording.${extension}`);
-  form.append("sourceLanguage", sourceLanguage);
-  form.append("targetLanguage", targetLanguage);
-  return api<T>("/api/translate/audio", { method: "POST", body: form });
+  return api<T>("/api/transcribe", { method: "POST", body: form });
 }

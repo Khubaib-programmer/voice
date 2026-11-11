@@ -9,4 +9,4 @@ COPY src ./src
 RUN npm run build
 ENV NODE_ENV=production
 EXPOSE 4000
-CMD ["sh", "-c", "npm run db:deploy && npm start"]
+CMD ["npm", "start"]

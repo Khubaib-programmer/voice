@@ -12,19 +12,4 @@ model User {
   email        String              @unique
   passwordHash String
   createdAt    DateTime            @default(now())
-  translations TranslationHistory[]
-}
-
-model TranslationHistory {
-  id                String   @id @default(cuid())
-  userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sourceLanguage    String
-  targetLanguage    String
-  sourceText        String   @db.Text
-  translatedText    String   @db.Text
-  detectionLanguage String?
-  createdAt         DateTime @default(now())
-
-  @@index([userId, createdAt(sort: Desc)])
 }

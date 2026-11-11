@@ -1,38 +1,40 @@
 # Architecture
 
-## System overview
+Vaani supports Hindi, English, Tamil, and Odia. The existing custom language model remains the source of source-language decisions. Groq Whisper receives audio without a forced language parameter, then the custom model identifies the returned transcript. Groq chat completions translate; the browser's Web Speech API plays translated output when a matching voice is installed. Users can attempt voice input in any supported language, but Odia transcription has not been independently verified. Odia translated playback depends on an installed `or-IN` speech voice.
 
-The browser dashboard records or accepts speech, obtains a transcript from a configured speech-to-text provider, sends text to the custom ML service for language/script detection, requests translation from a configured translation provider, and optionally plays translated speech using a configured text-to-speech provider. The Express API owns user sessions and translation history. PostgreSQL is the production database, accessed through Prisma.
-
-```text
-React + TypeScript + Tailwind
-        | HTTPS / REST
-        v
-Node.js + Express ---- Prisma ---- PostgreSQL
-        |                           (users, history)
-        +---- HTTP ---- FastAPI / scikit-learn language ID
-        +---- configured speech, translation, and TTS providers
+```mermaid
+flowchart LR
+  U[User: login and enter text or record audio] --> F[React + TypeScript + Tailwind]
+  F -->|Audio multipart| E[Express API]
+  E -->|Whisper transcription| G[Groq API]
+  G -->|Transcript| E
+  E -->|Text detection| M[FastAPI custom TF-IDF + Linear SVM]
+  F -->|Typed text detection| E
+  M -->|Language + score evidence| E
+  E -->|Transcript and detection| F
+  F -->|Text + detected source + target| E
+  E -->|Re-detect and validate source| M
+  E -->|Translation prompt| G
+  G -->|Translated text| E
+  E --> F
+  F -->|Translated text + target locale| S[Browser SpeechSynthesis]
+  A[PostgreSQL + Prisma] -->|User accounts only| E
+  E --> A
 ```
 
-Speech-to-text, translation, and text-to-speech adapters use Google Cloud Speech-to-Text v1, Cloud Translation v2, and Cloud Text-to-Speech with backend-only Application Default Credentials (OAuth bearer token). `GOOGLE_CLOUD_PROJECT` sets the provider quota project; `GOOGLE_APPLICATION_CREDENTIALS` points to a mounted service-account secret when the runtime does not provide ADC. The custom language detector remains the local FastAPI model. These are third-party services; the application does not claim to have trained their models. The current Google Speech-to-Text v1 and Text-to-Speech language catalogs do not list Odia support, so Odia voice input and Odia speech playback return an explicit HTTP 503. Cloud Translation lists Odia as experimental. Missing ADC returns HTTP 503 instead of sample or mock output.
+## Request flow
 
-## Language scope
+1. Express manages signup/login with bcrypt password hashes and HttpOnly session cookies. Prisma/PostgreSQL store user accounts. No translation content or audio is stored.
+2. The browser captures WebM/Opus or Ogg/Opus with `getUserMedia` and `MediaRecorder`. It sends one bounded multipart upload to `POST /api/transcribe`; stream tracks are stopped after recording and audio upload begins.
+3. Express sends audio bytes to Groq Whisper through the server-side SDK without a language hint. No API key reaches Vite. Whisper's actual transcript is displayed in the editable text area, then checked by the custom model.
+4. Typed and transcribed text is sent to `POST /api/detect`. Express proxies it to the unchanged FastAPI model and reports the model's language, confidence kind, and script evidence. The SVM's normalized decision score is presented as a score, not a calibrated probability.
+5. `POST /api/translate` includes only text and the chosen target. Express calls FastAPI again, rejects unknown/ambiguous predictions and a same-language target, then sends the model-detected source and selected target to Groq. The LLM is not used to classify language.
+6. The browser keeps the result only in the current page state. The prominent playback control reads `translatedText` with an installed voice matching the selected target locale. Pause, resume, stop, and missing voice states use `speechSynthesis`; the backend never returns fabricated or generated audio.
 
-Supported language codes are `hi` (Hindi), `en` (English), `ta` (Tamil), and `or` (Odia). These are the only options exposed by language selectors and supported by service validation. The language identifier distinguishes native-script and Latin-script evidence and may return an unknown/ambiguous result when evidence is insufficient. Code-mixed examples are labeled by the dominant/target language based on verified source annotations; this remains sentence-level classification, not token-level language identification.
+## Security and privacy
 
-## Initial service boundaries
-
-- Frontend handles recording permissions, source/target selection, transcript and translation display, copy/playback controls, loading/error states, and history UI.
-- Backend validates requests, handles authentication, persists history, and coordinates service calls.
-- ML service exposes language/script prediction and experiment metadata; model artifacts are generated locally from documented data and are not committed.
-- PostgreSQL stores user and history records. Google Cloud provider access uses backend-only Application Default Credentials (ADC); project configuration and other secrets are supplied through environment variables or mounted secrets.
-
-## Implemented request flow
-
-The React app records WebM/Opus or Ogg/Opus in the browser and sends it to Express as a bounded multipart request. Express sends the bytes to Google Speech-to-Text and does not persist the audio. For text or the resulting transcript, Express asks the local FastAPI model for language/script evidence, calls Google Cloud Translation using the user's selected source and target languages, then stores only the source/translated text and language metadata in PostgreSQL. Text-to-speech returns provider-generated MP3 bytes for immediate playback. History is account-scoped and can be deleted. The API rejects browser write requests from origins other than the configured frontend.
-
-The external provider key and a PostgreSQL instance are required for a fully functional translation workflow. Provider availability and supported voice/language combinations are controlled by Google Cloud and must be checked in the provisioned account before public release. Browser recording requires HTTPS outside localhost. A second speech/TTS provider is still required to deliver all features for Odia.
-
-## Quality and privacy
-
-Use request validation, bounded input sizes, safe password hashing, and explicit provider error handling. Do not persist raw audio by default. Document retention and provider data handling before public launch. Report measured model metrics and test results only after running the corresponding experiments.
+- Groq credentials are read only by Express from environment variables.
+- Production sessions use Secure, HttpOnly cookies and configured CORS origins.
+- Express enforces request and recording size limits, rate limits authentication, and checks model/database readiness at `/health`.
+- Raw audio exists in process memory only while it is sent upstream. Transcripts and translation results remain in the current client workspace and are not persisted to PostgreSQL.
+- Provider processing is third-party processing. Configure account privacy, quotas and spending limits in Groq before deployment.

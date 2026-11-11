@@ -1,0 +1,1679 @@
+{
+  "generated_at": "2026-11-11T04:48:07.250030+00:00",
+  "experiment": "short text improvement candidate; original production artifact remains unchanged",
+  "protocol": {
+    "primary_source_split": "existing deterministic StratifiedGroupKFold split, seed 42, unchanged 60/20/20 groups",
+    "supplement_split": "independent deterministic StratifiedGroupKFold split by Tatoeba translation-link/exact/near-duplicate group",
+    "test_usage": "No threshold or model selection used core or Tatoeba test sets. Candidate thresholds use combined validation plus the existing OOD calibration half.",
+    "short_definition": "1–8 whitespace tokens; medium 9–20; long >20",
+    "near_duplicate_filter": {
+      "char_3_5_cosine_threshold": 0.9,
+      "supplement_rows_removed_against_primary": 0
+    }
+  },
+  "dataset": {
+    "primary_rows": 5000,
+    "primary_split_rows": {
+      "train": 3000,
+      "validation": 1000,
+      "test": 1000
+    },
+    "primary_short_rows_by_split_and_language": {
+      "train": {
+        "rows": 686,
+        "by_language": {
+          "en": 22,
+          "hi": 116,
+          "or": 174,
+          "ta": 374
+        }
+      },
+      "validation": {
+        "rows": 250,
+        "by_language": {
+          "en": 12,
+          "hi": 44,
+          "or": 54,
+          "ta": 140
+        }
+      },
+      "test": {
+        "rows": 257,
+        "by_language": {
+          "en": 13,
+          "hi": 39,
+          "or": 61,
+          "ta": 144
+        }
+      }
+    },
+    "supplement_rows_after_filter": 1240,
+    "supplement_rows_by_language": {
+      "en": 350,
+      "hi": 349,
+      "or": 191,
+      "ta": 350
+    },
+    "supplement_split_rows": {
+      "train": 744,
+      "validation": 248,
+      "test": 248
+    },
+    "supplement_split_groups": {
+      "train": 706,
+      "validation": 237,
+      "test": 237
+    },
+    "supplement_test_rows_by_language": {
+      "en": 70,
+      "hi": 70,
+      "or": 38,
+      "ta": 70
+    },
+    "supplement_test_is_short_only": true,
+    "supplement_test_groups": 237,
+    "synthetic_rows": 0
+  },
+  "models": {
+    "baseline": {
+      "architecture": "character TF-IDF (char 2–5, min_df=1, sublinear_tf) + LinearSVC",
+      "existing_reproduced_headline": {
+        "accuracy": 0.969,
+        "macro_f1": 0.9675747938901821,
+        "per_language_f1": {
+          "en": 0.9330024813895782,
+          "hi": 0.9547738693467337,
+          "or": 0.9875311720698254,
+          "ta": 0.994991652754591
+        }
+      },
+      "same_core_test_raw_classifier": {
+        "rows": 1000,
+        "accuracy": 0.969,
+        "macro_f1": 0.9675747938901821,
+        "per_language": {
+          "en": {
+            "precision": 0.9261083743842364,
+            "recall": 0.94,
+            "f1": 0.9330024813895782
+          },
+          "hi": {
+            "precision": 0.9595959595959596,
+            "recall": 0.95,
+            "f1": 0.9547738693467337
+          },
+          "or": {
+            "precision": 0.9850746268656716,
+            "recall": 0.99,
+            "f1": 0.9875311720698254
+          },
+          "ta": {
+            "precision": 0.9966555183946488,
+            "recall": 0.9933333333333333,
+            "f1": 0.994991652754591
+          }
+        },
+        "confusion_matrix": [
+          [
+            188,
+            11,
+            1,
+            0
+          ],
+          [
+            12,
+            285,
+            2,
+            1
+          ],
+          [
+            1,
+            1,
+            198,
+            0
+          ],
+          [
+            2,
+            0,
+            0,
+            298
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "en",
+          "hi",
+          "or",
+          "ta"
+        ]
+      },
+      "same_tatoeba_short_test_raw_classifier": {
+        "rows": 248,
+        "accuracy": 0.9637096774193549,
+        "macro_f1": 0.9663725946245955,
+        "per_language": {
+          "en": {
+            "precision": 0.9701492537313433,
+            "recall": 0.9285714285714286,
+            "f1": 0.948905109489051
+          },
+          "hi": {
+            "precision": 0.9852941176470589,
+            "recall": 0.9571428571428572,
+            "f1": 0.9710144927536232
+          },
+          "or": {
+            "precision": 1.0,
+            "recall": 0.9736842105263158,
+            "f1": 0.9866666666666667
+          },
+          "ta": {
+            "precision": 0.9210526315789473,
+            "recall": 1.0,
+            "f1": 0.958904109589041
+          }
+        },
+        "confusion_matrix": [
+          [
+            65,
+            1,
+            0,
+            4
+          ],
+          [
+            2,
+            67,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            37,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            70
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "en",
+          "hi",
+          "or",
+          "ta"
+        ]
+      },
+      "core_test_by_length": {
+        "short_1_to_8_tokens": {
+          "rows": 257,
+          "accuracy": 0.9688715953307393,
+          "macro_f1": 0.9346269387575445,
+          "per_language": {
+            "en": {
+              "precision": 0.8461538461538461,
+              "recall": 0.8461538461538461,
+              "f1": 0.8461538461538461
+            },
+            "hi": {
+              "precision": 0.9473684210526315,
+              "recall": 0.9230769230769231,
+              "f1": 0.935064935064935
+            },
+            "or": {
+              "precision": 0.9523809523809523,
+              "recall": 0.9836065573770492,
+              "f1": 0.967741935483871
+            },
+            "ta": {
+              "precision": 0.993006993006993,
+              "recall": 0.9861111111111112,
+              "f1": 0.9895470383275261
+            }
+          },
+          "confusion_matrix": [
+            [
+              11,
+              1,
+              1,
+              0
+            ],
+            [
+              0,
+              36,
+              2,
+              1
+            ],
+            [
+              0,
+              1,
+              60,
+              0
+            ],
+            [
+              2,
+              0,
+              0,
+              142
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "medium_9_to_20_tokens": {
+          "rows": 514,
+          "accuracy": 0.9669260700389105,
+          "macro_f1": 0.9673018461684737,
+          "per_language": {
+            "en": {
+              "precision": 0.9224137931034483,
+              "recall": 0.9304347826086956,
+              "f1": 0.9264069264069265
+            },
+            "hi": {
+              "precision": 0.9470198675496688,
+              "recall": 0.9470198675496688,
+              "f1": 0.9470198675496688
+            },
+            "or": {
+              "precision": 1.0,
+              "recall": 0.9915966386554622,
+              "f1": 0.9957805907172996
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            }
+          },
+          "confusion_matrix": [
+            [
+              107,
+              8,
+              0,
+              0
+            ],
+            [
+              8,
+              143,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              118,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              129
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "long_over_20_tokens": {
+          "rows": 229,
+          "accuracy": 0.9737991266375546,
+          "macro_f1": 0.9828452934523062,
+          "per_language": {
+            "en": {
+              "precision": 0.9459459459459459,
+              "recall": 0.9722222222222222,
+              "f1": 0.958904109589041
+            },
+            "hi": {
+              "precision": 0.9814814814814815,
+              "recall": 0.9636363636363636,
+              "f1": 0.9724770642201835
+            },
+            "or": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            }
+          },
+          "confusion_matrix": [
+            [
+              70,
+              2,
+              0,
+              0
+            ],
+            [
+              4,
+              106,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              20,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              27
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        }
+      },
+      "core_test_by_category": {
+        "native_script": {
+          "rows": 400,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "per_language": {
+            "en": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "hi": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "or": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            }
+          },
+          "confusion_matrix": [
+            [
+              100,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              100,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              100,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              100
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "romanized": {
+          "rows": 300,
+          "accuracy": 0.98,
+          "macro_f1": 0.9849075343045192,
+          "per_language": {
+            "en": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "hi": {
+              "precision": 0.9897959183673469,
+              "recall": 0.97,
+              "f1": 0.9797979797979798
+            },
+            "or": {
+              "precision": 0.98989898989899,
+              "recall": 0.98,
+              "f1": 0.9849246231155779
+            },
+            "ta": {
+              "precision": 0.99,
+              "recall": 0.99,
+              "f1": 0.99
+            }
+          },
+          "confusion_matrix": [
+            [
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              97,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              98,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              99
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "code_mixed": {
+          "rows": 300,
+          "accuracy": 0.9166666666666666,
+          "macro_f1": 0.9197989949748745,
+          "per_language": {
+            "en": {
+              "precision": 0.88,
+              "recall": 0.88,
+              "f1": 0.88
+            },
+            "hi": {
+              "precision": 0.8888888888888888,
+              "recall": 0.88,
+              "f1": 0.8844221105527639
+            },
+            "or": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 0.99,
+              "f1": 0.9949748743718593
+            }
+          },
+          "confusion_matrix": [
+            [
+              88,
+              11,
+              1,
+              0
+            ],
+            [
+              11,
+              88,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              99
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        }
+      },
+      "known_core_test_rejection": {
+        "rows": 1000,
+        "accepted": 930,
+        "rejected_as_unknown_or_ambiguous": 70,
+        "coverage": 0.93,
+        "accuracy_among_accepted": 0.989247311827957,
+        "by_language": {
+          "en": {
+            "rows": 200,
+            "accepted": 176,
+            "coverage": 0.88,
+            "accuracy_among_accepted": 0.9659090909090909
+          },
+          "hi": {
+            "rows": 300,
+            "accepted": 268,
+            "coverage": 0.8933333333333333,
+            "accuracy_among_accepted": 0.9850746268656716
+          },
+          "or": {
+            "rows": 200,
+            "accepted": 192,
+            "coverage": 0.96,
+            "accuracy_among_accepted": 1.0
+          },
+          "ta": {
+            "rows": 300,
+            "accepted": 294,
+            "coverage": 0.98,
+            "accuracy_among_accepted": 1.0
+          }
+        },
+        "by_length": {
+          "long_over_20_tokens": {
+            "rows": 229,
+            "accepted": 218,
+            "coverage": 0.9519650655021834,
+            "accuracy_among_accepted": 0.9908256880733946
+          },
+          "medium_9_to_20_tokens": {
+            "rows": 514,
+            "accepted": 479,
+            "coverage": 0.9319066147859922,
+            "accuracy_among_accepted": 0.9832985386221295
+          },
+          "short_1_to_8_tokens": {
+            "rows": 257,
+            "accepted": 233,
+            "coverage": 0.9066147859922179,
+            "accuracy_among_accepted": 1.0
+          }
+        }
+      },
+      "tatoeba_short_test_rejection": {
+        "rows": 248,
+        "accepted": 167,
+        "rejected_as_unknown_or_ambiguous": 81,
+        "coverage": 0.6733870967741935,
+        "accuracy_among_accepted": 1.0,
+        "by_language": {
+          "en": {
+            "rows": 70,
+            "accepted": 37,
+            "coverage": 0.5285714285714286,
+            "accuracy_among_accepted": 1.0
+          },
+          "hi": {
+            "rows": 70,
+            "accepted": 44,
+            "coverage": 0.6285714285714286,
+            "accuracy_among_accepted": 1.0
+          },
+          "or": {
+            "rows": 38,
+            "accepted": 24,
+            "coverage": 0.631578947368421,
+            "accuracy_among_accepted": 1.0
+          },
+          "ta": {
+            "rows": 70,
+            "accepted": 62,
+            "coverage": 0.8857142857142857,
+            "accuracy_among_accepted": 1.0
+          }
+        },
+        "by_length": {
+          "short_1_to_8_tokens": {
+            "rows": 248,
+            "accepted": 167,
+            "coverage": 0.6733870967741935,
+            "accuracy_among_accepted": 1.0
+          }
+        }
+      },
+      "unknown_language_holdout": {
+        "rows": 400,
+        "accepted": 82,
+        "rejected_as_unknown_or_ambiguous": 318,
+        "coverage": 0.205,
+        "false_accept_rate": 0.205,
+        "rejection_rate": 0.795
+      }
+    },
+    "candidate": {
+      "architecture": "character-boundary TF-IDF (char_wb 2–5, min_df=1, sublinear_tf) + LinearSVC; added real Tatoeba short text",
+      "validation_raw": {
+        "rows": 1248,
+        "accuracy": 0.9775641025641025,
+        "macro_f1": 0.9774504664048808,
+        "per_language": {
+          "en": {
+            "precision": 0.9584905660377359,
+            "recall": 0.9407407407407408,
+            "f1": 0.9495327102803738
+          },
+          "hi": {
+            "precision": 0.9572192513368984,
+            "recall": 0.9675675675675676,
+            "f1": 0.9623655913978495
+          },
+          "or": {
+            "precision": 0.99581589958159,
+            "recall": 1.0,
+            "f1": 0.9979035639412998
+          },
+          "ta": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            254,
+            16,
+            0,
+            0
+          ],
+          [
+            11,
+            358,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            238,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            370
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "en",
+          "hi",
+          "or",
+          "ta"
+        ]
+      },
+      "same_core_test_raw_classifier": {
+        "rows": 1000,
+        "accuracy": 0.969,
+        "macro_f1": 0.9674977886028954,
+        "per_language": {
+          "en": {
+            "precision": 0.935,
+            "recall": 0.935,
+            "f1": 0.935
+          },
+          "hi": {
+            "precision": 0.9565217391304348,
+            "recall": 0.9533333333333334,
+            "f1": 0.9549248747913188
+          },
+          "or": {
+            "precision": 0.9801980198019802,
+            "recall": 0.99,
+            "f1": 0.9850746268656716
+          },
+          "ta": {
+            "precision": 0.9966555183946488,
+            "recall": 0.9933333333333333,
+            "f1": 0.994991652754591
+          }
+        },
+        "confusion_matrix": [
+          [
+            187,
+            12,
+            1,
+            0
+          ],
+          [
+            11,
+            286,
+            2,
+            1
+          ],
+          [
+            1,
+            1,
+            198,
+            0
+          ],
+          [
+            1,
+            0,
+            1,
+            298
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "en",
+          "hi",
+          "or",
+          "ta"
+        ]
+      },
+      "same_tatoeba_short_test_raw_classifier": {
+        "rows": 248,
+        "accuracy": 0.9919354838709677,
+        "macro_f1": 0.9928569606321023,
+        "per_language": {
+          "en": {
+            "precision": 0.9857142857142858,
+            "recall": 0.9857142857142858,
+            "f1": 0.9857142857142858
+          },
+          "hi": {
+            "precision": 1.0,
+            "recall": 0.9857142857142858,
+            "f1": 0.9928057553956835
+          },
+          "or": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "ta": {
+            "precision": 0.9859154929577465,
+            "recall": 1.0,
+            "f1": 0.9929078014184397
+          }
+        },
+        "confusion_matrix": [
+          [
+            69,
+            0,
+            0,
+            1
+          ],
+          [
+            1,
+            69,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            38,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            70
+          ]
+        ],
+        "confusion_matrix_labels": [
+          "en",
+          "hi",
+          "or",
+          "ta"
+        ]
+      },
+      "core_test_by_length": {
+        "short_1_to_8_tokens": {
+          "rows": 257,
+          "accuracy": 0.9727626459143969,
+          "macro_f1": 0.9483865709382293,
+          "per_language": {
+            "en": {
+              "precision": 0.8571428571428571,
+              "recall": 0.9230769230769231,
+              "f1": 0.8888888888888888
+            },
+            "hi": {
+              "precision": 0.972972972972973,
+              "recall": 0.9230769230769231,
+              "f1": 0.9473684210526315
+            },
+            "or": {
+              "precision": 0.9523809523809523,
+              "recall": 0.9836065573770492,
+              "f1": 0.967741935483871
+            },
+            "ta": {
+              "precision": 0.993006993006993,
+              "recall": 0.9861111111111112,
+              "f1": 0.9895470383275261
+            }
+          },
+          "confusion_matrix": [
+            [
+              12,
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              36,
+              1,
+              1
+            ],
+            [
+              0,
+              1,
+              60,
+              0
+            ],
+            [
+              1,
+              0,
+              1,
+              142
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "medium_9_to_20_tokens": {
+          "rows": 514,
+          "accuracy": 0.9630350194552529,
+          "macro_f1": 0.9634001580217749,
+          "per_language": {
+            "en": {
+              "precision": 0.9210526315789473,
+              "recall": 0.9130434782608695,
+              "f1": 0.9170305676855895
+            },
+            "hi": {
+              "precision": 0.934640522875817,
+              "recall": 0.9470198675496688,
+              "f1": 0.9407894736842105
+            },
+            "or": {
+              "precision": 1.0,
+              "recall": 0.9915966386554622,
+              "f1": 0.9957805907172996
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            }
+          },
+          "confusion_matrix": [
+            [
+              105,
+              10,
+              0,
+              0
+            ],
+            [
+              8,
+              143,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              118,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              129
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "long_over_20_tokens": {
+          "rows": 229,
+          "accuracy": 0.9781659388646288,
+          "macro_f1": 0.9812502320228682,
+          "per_language": {
+            "en": {
+              "precision": 0.9722222222222222,
+              "recall": 0.9722222222222222,
+              "f1": 0.9722222222222222
+            },
+            "hi": {
+              "precision": 0.981651376146789,
+              "recall": 0.9727272727272728,
+              "f1": 0.9771689497716894
+            },
+            "or": {
+              "precision": 0.9523809523809523,
+              "recall": 1.0,
+              "f1": 0.975609756097561
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            }
+          },
+          "confusion_matrix": [
+            [
+              70,
+              2,
+              0,
+              0
+            ],
+            [
+              2,
+              107,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              20,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              27
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        }
+      },
+      "core_test_by_category": {
+        "native_script": {
+          "rows": 400,
+          "accuracy": 1.0,
+          "macro_f1": 1.0,
+          "per_language": {
+            "en": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "hi": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "or": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0
+            }
+          },
+          "confusion_matrix": [
+            [
+              100,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              100,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              100,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              100
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "romanized": {
+          "rows": 300,
+          "accuracy": 0.98,
+          "macro_f1": 0.9832659932659933,
+          "per_language": {
+            "en": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "hi": {
+              "precision": 0.9897959183673469,
+              "recall": 0.97,
+              "f1": 0.9797979797979798
+            },
+            "or": {
+              "precision": 0.98,
+              "recall": 0.98,
+              "f1": 0.98
+            },
+            "ta": {
+              "precision": 0.99,
+              "recall": 0.99,
+              "f1": 0.99
+            }
+          },
+          "confusion_matrix": [
+            [
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              97,
+              1,
+              1
+            ],
+            [
+              1,
+              1,
+              98,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              99
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        },
+        "code_mixed": {
+          "rows": 300,
+          "accuracy": 0.9166666666666666,
+          "macro_f1": 0.9197782974877402,
+          "per_language": {
+            "en": {
+              "precision": 0.8877551020408163,
+              "recall": 0.87,
+              "f1": 0.8787878787878788
+            },
+            "hi": {
+              "precision": 0.8811881188118812,
+              "recall": 0.89,
+              "f1": 0.8855721393034826
+            },
+            "or": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0
+            },
+            "ta": {
+              "precision": 1.0,
+              "recall": 0.99,
+              "f1": 0.9949748743718593
+            }
+          },
+          "confusion_matrix": [
+            [
+              87,
+              12,
+              1,
+              0
+            ],
+            [
+              10,
+              89,
+              1,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              99
+            ]
+          ],
+          "confusion_matrix_labels": [
+            "en",
+            "hi",
+            "or",
+            "ta"
+          ]
+        }
+      },
+      "known_core_test_rejection": {
+        "rows": 1000,
+        "accepted": 940,
+        "rejected_as_unknown_or_ambiguous": 60,
+        "coverage": 0.94,
+        "accuracy_among_accepted": 0.9861702127659574,
+        "by_language": {
+          "en": {
+            "rows": 200,
+            "accepted": 180,
+            "coverage": 0.9,
+            "accuracy_among_accepted": 0.9777777777777777
+          },
+          "hi": {
+            "rows": 300,
+            "accepted": 272,
+            "coverage": 0.9066666666666666,
+            "accuracy_among_accepted": 0.9742647058823529
+          },
+          "or": {
+            "rows": 200,
+            "accepted": 194,
+            "coverage": 0.97,
+            "accuracy_among_accepted": 0.9948453608247423
+          },
+          "ta": {
+            "rows": 300,
+            "accepted": 294,
+            "coverage": 0.98,
+            "accuracy_among_accepted": 0.9965986394557823
+          }
+        },
+        "by_length": {
+          "long_over_20_tokens": {
+            "rows": 229,
+            "accepted": 222,
+            "coverage": 0.9694323144104804,
+            "accuracy_among_accepted": 0.9864864864864865
+          },
+          "medium_9_to_20_tokens": {
+            "rows": 514,
+            "accepted": 484,
+            "coverage": 0.9416342412451362,
+            "accuracy_among_accepted": 0.981404958677686
+          },
+          "short_1_to_8_tokens": {
+            "rows": 257,
+            "accepted": 234,
+            "coverage": 0.9105058365758755,
+            "accuracy_among_accepted": 0.9957264957264957
+          }
+        }
+      },
+      "tatoeba_short_test_rejection": {
+        "rows": 248,
+        "accepted": 227,
+        "rejected_as_unknown_or_ambiguous": 21,
+        "coverage": 0.9153225806451613,
+        "accuracy_among_accepted": 1.0,
+        "by_language": {
+          "en": {
+            "rows": 70,
+            "accepted": 64,
+            "coverage": 0.9142857142857143,
+            "accuracy_among_accepted": 1.0
+          },
+          "hi": {
+            "rows": 70,
+            "accepted": 61,
+            "coverage": 0.8714285714285714,
+            "accuracy_among_accepted": 1.0
+          },
+          "or": {
+            "rows": 38,
+            "accepted": 35,
+            "coverage": 0.9210526315789473,
+            "accuracy_among_accepted": 1.0
+          },
+          "ta": {
+            "rows": 70,
+            "accepted": 67,
+            "coverage": 0.9571428571428572,
+            "accuracy_among_accepted": 1.0
+          }
+        },
+        "by_length": {
+          "short_1_to_8_tokens": {
+            "rows": 248,
+            "accepted": 227,
+            "coverage": 0.9153225806451613,
+            "accuracy_among_accepted": 1.0
+          }
+        }
+      },
+      "unknown_language_holdout": {
+        "rows": 400,
+        "accepted": 101,
+        "rejected_as_unknown_or_ambiguous": 299,
+        "coverage": 0.2525,
+        "false_accept_rate": 0.2525,
+        "rejection_rate": 0.7475
+      },
+      "selected_threshold": {
+        "min_confidence": 0.4431231823562185,
+        "min_margin": 0.0,
+        "known_validation_coverage": 0.9246794871794872,
+        "known_validation_accuracy_on_accepted": 0.9896013864818024,
+        "code_mixed_validation_coverage": 0.8339100346020761,
+        "short_validation_coverage": 0.9036144578313253,
+        "short_validation_accuracy_on_accepted": 0.9977777777777778,
+        "unknown_calibration_rejection_rate": 0.79,
+        "unknown_calibration_rows": 400
+      },
+      "artifact": {
+        "path": "artifacts/short-text-candidate/candidate_model.joblib",
+        "bytes": 10840667,
+        "sha256": "e9a3c757efe8091ce71cfb576ac6fae2e7c13d410ffd6f32f90ad67a4a54d2eb"
+      }
+    }
+  },
+  "challenge_inputs": {
+    "note": "User-supplied examples are diagnostic challenge strings, not training data or a statistically representative benchmark.",
+    "baseline": {
+      "en": [
+        {
+          "text": "Good morning.",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.31742801913425805,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.1018773983618611,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "How are you?",
+          "language": "en",
+          "candidate_language": "en",
+          "model_score": 0.5361999863590914,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.873002278582969,
+          "reason": null
+        },
+        {
+          "text": "My name is Khubaib.",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.32865130761036365,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.2763823088458494,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "I live in India.",
+          "language": "en",
+          "candidate_language": "en",
+          "model_score": 0.47592458851495634,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.8062928874178914,
+          "reason": null
+        },
+        {
+          "text": "My name is Muhammad Khubab Ansari.",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.29249120134593043,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.12170956412486544,
+          "reason": "ambiguous"
+        }
+      ],
+      "hi": [
+        {
+          "text": "आप कैसे हैं?",
+          "language": "hi",
+          "candidate_language": "hi",
+          "model_score": 0.4778633714572446,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.9068694180478056,
+          "reason": null
+        },
+        {
+          "text": "मेरा नाम खुबैब है।",
+          "language": "hi",
+          "candidate_language": "hi",
+          "model_score": 0.5680396204553341,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.3153153489456313,
+          "reason": null
+        },
+        {
+          "text": "मुझे पानी चाहिए।",
+          "language": "hi",
+          "candidate_language": "hi",
+          "model_score": 0.5253259485161659,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.011376729436305,
+          "reason": null
+        }
+      ],
+      "ta": [
+        {
+          "text": "வணக்கம்.",
+          "language": "ta",
+          "candidate_language": "ta",
+          "model_score": 0.5233805866789968,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.0971920867533322,
+          "reason": null
+        },
+        {
+          "text": "நீங்கள் எப்படி இருக்கிறீர்கள்?",
+          "language": "ta",
+          "candidate_language": "ta",
+          "model_score": 0.7544767953774832,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 2.113441718847911,
+          "reason": null
+        }
+      ],
+      "or": [
+        {
+          "text": "ନମସ୍କାର।",
+          "language": "unknown",
+          "candidate_language": "or",
+          "model_score": 0.40398443119321126,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.6101428831473388,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "ଆପଣ କେମିତି ଅଛନ୍ତି?",
+          "language": "or",
+          "candidate_language": "or",
+          "model_score": 0.5527154158594446,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.252764457570878,
+          "reason": null
+        }
+      ],
+      "unsupported_or_ambiguous": [
+        {
+          "text": "Bonjour",
+          "language": "unknown",
+          "candidate_language": "ta",
+          "model_score": 0.2832427937876536,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.08143131627722577,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "Guten Morgen",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.34694486291104876,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.2209695818949784,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "বাংলা ভাষা",
+          "language": "unknown",
+          "candidate_language": null,
+          "model_score": 0.0,
+          "confidence_kind": null,
+          "margin": null,
+          "reason": "unsupported_script"
+        },
+        {
+          "text": "OK",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.2967468014193496,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.1312131996122966,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "Hi",
+          "language": "unknown",
+          "candidate_language": "or",
+          "model_score": 0.36785605821220557,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.3640279559478242,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "namaste",
+          "language": "unknown",
+          "candidate_language": "or",
+          "model_score": 0.3358140235221912,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.11437106861164348,
+          "reason": "ambiguous"
+        }
+      ]
+    },
+    "candidate": {
+      "en": [
+        {
+          "text": "Good morning.",
+          "language": "en",
+          "candidate_language": "en",
+          "model_score": 0.4673881213469173,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.7966668846851469,
+          "reason": null
+        },
+        {
+          "text": "How are you?",
+          "language": "en",
+          "candidate_language": "en",
+          "model_score": 0.6544119008464857,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.3302703295652307,
+          "reason": null
+        },
+        {
+          "text": "My name is Khubaib.",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.40724356771367975,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.47683648619002134,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "I live in India.",
+          "language": "en",
+          "candidate_language": "en",
+          "model_score": 0.6614215828140643,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.5901695599506545,
+          "reason": null
+        },
+        {
+          "text": "My name is Muhammad Khubab Ansari.",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.32724488555430514,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.1704635878257793,
+          "reason": "ambiguous"
+        }
+      ],
+      "hi": [
+        {
+          "text": "आप कैसे हैं?",
+          "language": "hi",
+          "candidate_language": "hi",
+          "model_score": 0.6372123224095658,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.628609787918055,
+          "reason": null
+        },
+        {
+          "text": "मेरा नाम खुबैब है।",
+          "language": "hi",
+          "candidate_language": "hi",
+          "model_score": 0.7215446159376315,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.9995846367151124,
+          "reason": null
+        },
+        {
+          "text": "मुझे पानी चाहिए।",
+          "language": "hi",
+          "candidate_language": "hi",
+          "model_score": 0.7159319014844296,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.9184543412642765,
+          "reason": null
+        }
+      ],
+      "ta": [
+        {
+          "text": "வணக்கம்.",
+          "language": "ta",
+          "candidate_language": "ta",
+          "model_score": 0.5600513040668323,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.3141638228939347,
+          "reason": null
+        },
+        {
+          "text": "நீங்கள் எப்படி இருக்கிறீர்கள்?",
+          "language": "ta",
+          "candidate_language": "ta",
+          "model_score": 0.792166021457133,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 2.3415279771089477,
+          "reason": null
+        }
+      ],
+      "or": [
+        {
+          "text": "ନମସ୍କାର।",
+          "language": "or",
+          "candidate_language": "or",
+          "model_score": 0.5748596621154929,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.3163314149203194,
+          "reason": null
+        },
+        {
+          "text": "ଆପଣ କେମିତି ଅଛନ୍ତି?",
+          "language": "or",
+          "candidate_language": "or",
+          "model_score": 0.7418764398481792,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 2.1472451423406818,
+          "reason": null
+        }
+      ],
+      "unsupported_or_ambiguous": [
+        {
+          "text": "Bonjour",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.31766820293612197,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.20178756763280253,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "Guten Morgen",
+          "language": "unknown",
+          "candidate_language": "en",
+          "model_score": 0.4360647528298143,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.6652026226050217,
+          "reason": "ambiguous"
+        },
+        {
+          "text": "বাংলা ভাষা",
+          "language": "unknown",
+          "candidate_language": null,
+          "model_score": 0.0,
+          "confidence_kind": null,
+          "margin": null,
+          "reason": "unsupported_script"
+        },
+        {
+          "text": "OK",
+          "language": "en",
+          "candidate_language": "en",
+          "model_score": 0.45697536984604187,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.7545755314958771,
+          "reason": null
+        },
+        {
+          "text": "Hi",
+          "language": "hi",
+          "candidate_language": "hi",
+          "model_score": 0.5673807062250608,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 1.3058680835026526,
+          "reason": null
+        },
+        {
+          "text": "namaste",
+          "language": "unknown",
+          "candidate_language": "or",
+          "model_score": 0.3419119449064195,
+          "confidence_kind": "normalized_decision_score_proxy",
+          "margin": 0.29917766569980797,
+          "reason": "ambiguous"
+        }
+      ]
+    }
+  },
+  "promotion_recommended": false,
+  "conclusion": "Do not promote: the candidate improves the supplemental Tatoeba short holdout but does not improve primary macro F1 and raises the unknown-language false-accept rate; it also accepts ambiguous challenge strings. The production artifact is unchanged."
+}

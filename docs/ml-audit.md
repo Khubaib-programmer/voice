@@ -35,6 +35,12 @@ The pre-calibration threshold (`min_confidence=0.25`) rejected **417/800 (52.125
 
 The calibrated bundle SHA-256 is recorded in `ml-service/artifacts/unknown-language-evaluation.json`. A fresh Python process loads the artifact through FastAPI's lifespan; live service prediction checks were also run during application integration. The model artifact is generated locally and excluded from Git, so production deployment must supply the matching generated artifact.
 
+## Short-text behavior
+
+The saved `LanguageIdentifier` rejects normalized inputs shorter than two characters as `unknown` with reason `input_too_short`. Longer fragments still pass through the unchanged TF-IDF + Linear SVM and existing confidence/margin thresholds. Runtime probes of one-character and short (2–5 character) fragments returned unknown/ambiguous predictions; some candidate labels were low-scoring and were not surfaced as detections. The translator UI therefore asks users for a fuller sentence and never fills in a language itself. No model thresholds, artifact contents, or audited evaluation results were changed for this workflow update.
+
 ## Limitations and next actions
 
 The reported headline scores are reproduced but are within-source row-level scores. Native-script classification is easier than Latin-script classification, mixed-language misses remain, and the improved rejection rate comes with lower known-input coverage. Before production, collect an independent source-disjoint unknown and mixed-text evaluation set. A future update must report fresh holdout metrics and preserve the reproducible primary classifier results.
+
+The short-text experiment and promotion decision are documented separately in [the short-text ML audit](short-text-ml-audit.md). It retains the existing production model because the short-source candidate increased the unknown-language false-accept rate.

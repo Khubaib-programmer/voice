@@ -10,7 +10,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:deploy": "prisma migrate deploy",
-    "providers:smoke": "tsx scripts/provider-smoke.ts",
+    "providers:smoke": "node --import tsx scripts/provider-smoke.ts",
     "test": "vitest run"
   },
   "dependencies": {
@@ -21,7 +21,7 @@
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "express-rate-limit": "^8.1.0",
-    "google-auth-library": "^11.3.4",
+    "groq-sdk": "^1.6.0",
     "helmet": "^8.1.0",
     "jose": "^6.1.0",
     "multer": "^2.0.2",
@@ -37,7 +37,7 @@
     "@types/node": "^24.10.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^5.1.0"
   },
   "allowScripts": {
     "@prisma/client@6.19.3": true,

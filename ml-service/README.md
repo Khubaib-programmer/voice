@@ -42,4 +42,19 @@ Keep variant examples grouped by source ID and pass `--group-column group_id` wh
 
 Set `MODEL_PATH=artifacts/real-source-run/best_model.joblib`, then run `uvicorn indic_id.api:app --app-dir src --host 127.0.0.1 --port 8000`. `POST /predict` returns language, confidence evidence, latency, and script evidence. If the model artifact is unavailable, predictions return HTTP 503; the service never invents a default classification.
 
-LinearSVC does not produce calibrated probabilities. Its normalized decision-score estimate is explicitly labeled and must not be interpreted as a probability. Rejection thresholds are configurable and provisional; the current evaluation has no unknown-language test set.
+LinearSVC does not produce calibrated probabilities. Its normalized decision-score estimate is explicitly labeled and must not be interpreted as a probability. The current production threshold is calibrated on known validation data and a separate Dakshina OOD calibration slice; an untouched OOD holdout is reported in `artifacts/unknown-language-evaluation.json`.
+
+## Short-text candidate experiment
+
+The short-text experiment compares the existing artifact with a character-boundary TF-IDF + LinearSVC candidate and a small, real Tatoeba text subset. Tatoeba rows retain sentence IDs, contributor, and per-row license. Prepare the saved local API snapshot and evaluate without replacing the production model:
+
+```sh
+PYTHONPATH=src .venv312/bin/python -m indic_id.prepare_tatoeba_short \
+  --snapshot data/raw/tatoeba-short-api-snapshot.json \
+  --output data/processed/tatoeba-short.tsv \
+  --manifest artifacts/tatoeba-short-manifest.json \
+  --compact-snapshot data/raw/tatoeba-short-subset.json
+PYTHONPATH=src .venv312/bin/python -m indic_id.short_text_experiment
+```
+
+See [`docs/short-text-ml-audit.md`](../docs/short-text-ml-audit.md) for the audit, exact holdout results, limitations, candidate artifact hash, and promotion decision. The experiment intentionally saves the candidate separately; the production artifact remains `artifacts/real-source-run/best_model.joblib`.

@@ -1,0 +1,72 @@
+{
+  "dataset": "Tatoeba short sentence subset",
+  "source": "Tatoeba API (https://api.tatoeba.org/v1/sentences)",
+  "attribution": "Sentence text is from Tatoeba (https://tatoeba.org); attribute each sentence to its recorded contributor and sentence URL. Text is published under CC BY 2.0 FR or CC0 1.0 as recorded per row.",
+  "query_filters": {
+    "word_count": "3-8",
+    "is_orphan": "no",
+    "is_unapproved": "no",
+    "sort": "random",
+    "showtrans": "all",
+    "additional_word_count": "1-2",
+    "primary_word_count": "3-8"
+  },
+  "input_snapshot": "data/raw/tatoeba-short-api-snapshot.json",
+  "input_snapshot_bytes": 398625,
+  "input_snapshot_sha256": "9fadd67d8f9682f879118c45730a28656b4e88f452fac33c1b590d56590e0b9b",
+  "api_totals_at_query": {
+    "en": 1344081,
+    "hi": 12711,
+    "ta": 401,
+    "or": 94
+  },
+  "api_totals_1_to_2_at_query": {
+    "en": 8041,
+    "hi": 1289,
+    "ta": 160,
+    "or": 299
+  },
+  "fetched_rows_by_language": {
+    "en": 350,
+    "hi": 350,
+    "ta": 350,
+    "or": 194
+  },
+  "fetched_1_to_2_by_language": {
+    "en": 100,
+    "hi": 100,
+    "ta": 100,
+    "or": 100
+  },
+  "prepared_rows": 1240,
+  "prepared_rows_by_language": {
+    "en": 350,
+    "hi": 349,
+    "or": 191,
+    "ta": 350
+  },
+  "category_distribution": {
+    "native_script": 1240,
+    "romanized": 0,
+    "code_mixed": 0
+  },
+  "license_distribution": {
+    "CC BY 2.0 FR": 1233,
+    "CC0 1.0": 7
+  },
+  "synthetic_rows": 0,
+  "dataset_generated_rows": 0,
+  "excluded_counts": {
+    "outside_1_to_8_tokens": 4
+  },
+  "pair_and_duplicate_grouping": "Tatoeba translation-link IDs plus normalized exact text and binary character 3-5 gram cosine >= 0.90; groups are split together.",
+  "group_count": 1180,
+  "output": "data/processed/tatoeba-short.tsv",
+  "output_bytes": 240660,
+  "output_sha256": "4f07e83383fe3a5ff1603f1c471c6fc7d6f4815df97fa71367553e6cea5cf407",
+  "limitations": [
+    "Community-contributed sentence labels and text are not individually expert-verified; script mismatches and mixed-script rows are excluded.",
+    "The available short Odia pool is small and its evaluation must be reported with its exact count.",
+    "This supplemental corpus is evaluated separately and does not replace the original 5,000-row source-aware holdout."
+  ]
+}

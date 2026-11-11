@@ -39,20 +39,20 @@ describe("microphone recording failures", () => {
   });
 });
 
-describe("audio translation submission", () => {
-  it("submits the captured blob and selected languages as multipart form data", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ transcription: "hello", translatedText: "नमस्ते" }), {
+describe("audio transcription submission", () => {
+  it("submits the captured blob without forcing a speech language", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: "hello", detection: { language: "en" } }), {
       status: 200,
       headers: { "content-type": "application/json" },
     }));
     vi.stubGlobal("fetch", fetchMock);
     const blob = new Blob([new Uint8Array([1, 2, 3])], { type: "audio/webm" });
-    const result = await submitAudioRecording<{ transcription: string; translatedText: string }>(blob, "en", "hi");
+    const result = await submitAudioRecording<{ text: string; detection: { language: string } }>(blob);
 
-    expect(result).toEqual({ transcription: "hello", translatedText: "नमस्ते" });
+    expect(result).toEqual({ text: "hello", detection: { language: "en" } });
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, request] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("/api/translate/audio");
+    expect(url).toContain("/api/transcribe");
     expect(request.method).toBe("POST");
     expect(request.credentials).toBe("include");
     expect(request.headers).toBeUndefined();
@@ -60,21 +60,20 @@ describe("audio translation submission", () => {
     const body = request.body as FormData;
     expect((body.get("audio") as File).type).toBe("audio/webm");
     expect((body.get("audio") as File).name).toBe("recording.webm");
-    expect(body.get("sourceLanguage")).toBe("en");
-    expect(body.get("targetLanguage")).toBe("hi");
+    expect(body.has("language")).toBe(false);
   });
 
   it("rejects empty recordings before sending a request", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    await expect(submitAudioRecording(new Blob([], { type: "audio/webm" }), "en", "hi"))
+    await expect(submitAudioRecording(new Blob([], { type: "audio/webm" })))
       .rejects.toThrow("recording is empty");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("shows a backend connection error instead of a generic fetch failure", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
-    await expect(submitAudioRecording(new Blob([new Uint8Array([1])], { type: "audio/webm" }), "en", "hi"))
+    await expect(submitAudioRecording(new Blob([new Uint8Array([1])], { type: "audio/webm" })))
       .rejects.toThrow("Check that Express is running");
   });
 });

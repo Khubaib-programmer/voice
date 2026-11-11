@@ -4,11 +4,10 @@ import { z } from "zod";
 import { isSupportedRecordingMimeType } from "../audio.js";
 import { requireUser } from "../auth.js";
 import { config } from "../config.js";
-import { prisma } from "../db.js";
 import { asyncRoute, httpError } from "../http.js";
 import { isLanguageCode } from "../languages.js";
-import { detectLanguage } from "../providers/ml.js";
-import { synthesizeSpeech, transcribeAudio, translateText } from "../providers/google.js";
+import { transcribeAudio } from "../providers/groq.js";
+import { detectText, translateDetectedText } from "../translation.js";
 
 const router = Router();
 router.use(requireUser);
@@ -21,65 +20,28 @@ const upload = multer({
   },
 });
 
-const languagePair = {
-  sourceLanguage: z.string().refine(isLanguageCode, "Unsupported source language"),
+const textInput = z.object({ text: z.string().trim().min(1, "Enter text first.").max(10_000) });
+const targetInput = z.object({
+  text: z.string().trim().min(1, "Enter text first.").max(10_000),
   targetLanguage: z.string().refine(isLanguageCode, "Unsupported target language"),
-};
-
-const translationInput = z.object({
-  text: z.string().trim().min(1).max(10_000),
-  ...languagePair,
-}).refine((value) => value.sourceLanguage !== value.targetLanguage, {
-  message: "Choose different source and target languages.",
 });
 
-const audioTranslationInput = z.object(languagePair).refine((value) => value.sourceLanguage !== value.targetLanguage, {
-  message: "Choose different source and target languages.",
-});
-
-async function processTranslation(text: string, sourceLanguage: "hi" | "en" | "ta" | "or", targetLanguage: "hi" | "en" | "ta" | "or", userId: string) {
-  const detection = await detectLanguage(text);
-  const translatedText = await translateText(text, sourceLanguage, targetLanguage);
-  const record = await prisma.translationHistory.create({
-    data: { userId, sourceLanguage, targetLanguage, sourceText: text, translatedText, detectionLanguage: detection.language },
-    select: { id: true, createdAt: true },
-  });
-  return { text, translatedText, sourceLanguage, targetLanguage, detection, history: record };
-}
-
-router.post("/translate", asyncRoute(async (req, res) => {
-  const input = translationInput.parse(req.body);
-  res.json(await processTranslation(input.text, input.sourceLanguage, input.targetLanguage, res.locals.userId));
+router.post("/detect", asyncRoute(async (req, res) => {
+  const { text } = textInput.parse(req.body);
+  res.json({ detection: await detectText(text) });
 }));
 
-router.post("/translate/audio", upload.single("audio"), asyncRoute(async (req, res) => {
+router.post("/transcribe", upload.single("audio"), asyncRoute(async (req, res) => {
   if (!req.file) throw httpError(400, "Select a voice recording first.");
   if (!req.file.size) throw httpError(400, "The recording is empty. Record a short message and try again.");
-  const input = audioTranslationInput.parse(req.body);
-  const transcript = await transcribeAudio(req.file.buffer, req.file.mimetype, input.sourceLanguage as "hi" | "en" | "ta" | "or");
-  const result = await processTranslation(transcript, input.sourceLanguage as "hi" | "en" | "ta" | "or", input.targetLanguage as "hi" | "en" | "ta" | "or", res.locals.userId);
-  res.json({ ...result, transcription: transcript });
+  const transcript = await transcribeAudio(req.file.buffer, req.file.mimetype);
+  const detection = await detectText(transcript);
+  res.json({ text: transcript, detection });
 }));
 
-router.post("/tts", asyncRoute(async (req, res) => {
-  const input = z.object({ text: z.string().trim().min(1).max(5_000), language: z.string().refine(isLanguageCode) }).parse(req.body);
-  res.json({ audioContent: await synthesizeSpeech(input.text, input.language as "hi" | "en" | "ta" | "or"), mimeType: "audio/mpeg" });
-}));
-
-router.get("/history", asyncRoute(async (req, res) => {
-  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 25));
-  const translations = await prisma.translationHistory.findMany({
-    where: { userId: res.locals.userId },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
-  res.json({ translations });
-}));
-
-router.delete("/history/:id", asyncRoute(async (req, res) => {
-  const result = await prisma.translationHistory.deleteMany({ where: { id: req.params.id, userId: res.locals.userId } });
-  if (!result.count) throw httpError(404, "Translation history item not found.");
-  res.status(204).end();
+router.post("/translate", asyncRoute(async (req, res) => {
+  const input = targetInput.parse(req.body);
+  res.json(await translateDetectedText(input.text, input.targetLanguage as "hi" | "en" | "ta" | "or"));
 }));
 
 export default router;

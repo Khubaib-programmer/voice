@@ -5,6 +5,7 @@ import hashlib
 from math import ceil
 from statistics import mean
 from time import perf_counter
+import unicodedata
 
 import numpy as np
 from sklearn.base import clone
@@ -229,7 +230,10 @@ class LanguageIdentifier:
     min_margin: float = 0.10
 
     def predict(self, text: str) -> dict[str, object]:
-        cleaned = " ".join(text.strip().split())
+        # Match the NFC normalization used by the training data loader. This
+        # preserves Indic characters while collapsing canonically equivalent
+        # sequences to the feature forms seen during training.
+        cleaned = unicodedata.normalize("NFC", " ".join(text.strip().split()))
         if len(cleaned) < 2:
             return {"language": "unknown", "confidence": 0.0, "reason": "input_too_short"}
         script_evidence = classify_script(cleaned)

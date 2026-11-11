@@ -9,9 +9,9 @@ const schema = z.object({
   DATABASE_URL: z.string().min(1),
   COOKIE_SECRET: z.string().min(32),
   ML_SERVICE_URL: z.string().url().default("http://127.0.0.1:8000"),
-  GOOGLE_CLOUD_PROJECT: z.string().optional().default(""),
-  GOOGLE_APPLICATION_CREDENTIALS: z.string().optional().default(""),
-  DEV_MOCK_PROVIDERS: z.coerce.boolean().default(true),
+  GROQ_API_KEY: z.string().optional().default(""),
+  GROQ_STT_MODEL: z.string().default("whisper-large-v3"),
+  GROQ_TRANSLATION_MODEL: z.string().default("openai/gpt-oss-120b"),
   MAX_AUDIO_BYTES: z.coerce.number().int().positive().default(10 * 1024 * 1024),
 });
 

@@ -37,11 +37,10 @@ services:
       DATABASE_URL: postgresql://voice_app:${POSTGRES_PASSWORD}@postgres:5432/voice_translator?schema=public
       COOKIE_SECRET: ${COOKIE_SECRET:?Set COOKIE_SECRET in .env}
       ML_SERVICE_URL: http://ml-service:8000
-      GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:?Set GOOGLE_CLOUD_PROJECT in .env}
-      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/google-service-account.json
+      GROQ_API_KEY: ${GROQ_API_KEY:?Set GROQ_API_KEY in .env}
+      GROQ_STT_MODEL: ${GROQ_STT_MODEL:-whisper-large-v3}
+      GROQ_TRANSLATION_MODEL: ${GROQ_TRANSLATION_MODEL:-openai/gpt-oss-120b}
       MAX_AUDIO_BYTES: 10485760
-    secrets:
-      - google-service-account
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,7 +88,3 @@ volumes:
   postgres_data:
   caddy_data:
   caddy_config:
-
-secrets:
-  google-service-account:
-    file: ./secrets/google-service-account.json

@@ -1,6 +1,27 @@
 from indic_id.model import LanguageIdentifier, compare_models
 
 
+class _NormalizationProbe:
+    def __init__(self):
+        self.seen = None
+        self.named_steps = {"classifier": self}
+        self.classes_ = ["en", "hi"]
+
+    def predict(self, samples):
+        self.seen = samples[0]
+        return ["en"]
+
+    def decision_function(self, samples):
+        return [4.0]
+
+
+def test_inference_normalization_matches_training_nfc_without_dropping_text():
+    probe = _NormalizationProbe()
+    result = LanguageIdentifier(probe, min_confidence=0.0, min_margin=0.0).predict("  cafe\u0301   today  ")
+    assert result["language"] == "en"
+    assert probe.seen == "café today"
+
+
 def test_comparison_reports_required_metrics():
     examples = []
     for i in range(8):
