@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 process.env.COOKIE_SECRET ??= "test-only-session-secret-with-more-than-32-characters";
 process.env.DATABASE_URL ??= "postgresql://test:test@127.0.0.1:5432/test";
-process.env.GOOGLE_CLOUD_API_KEY = "test-provider-key";
+
+vi.mock("../src/providers/google-auth.js", () => ({
+  googleAuthorizationHeaders: vi.fn(async () => ({ Authorization: "Bearer test-google-access-token" })),
+}));
 
 const { synthesizeSpeech, transcribeAudio, translateText } = await import("../src/providers/google.js");
 
@@ -19,7 +22,10 @@ describe("Google Cloud provider adapters", () => {
     const request = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(request.config.encoding).toBe("WEBM_OPUS");
     expect(request.config.languageCode).toBe("hi-IN");
+    expect(request.config.alternativeLanguageCodes).toEqual(["en-US", "ta-IN"]);
     expect(request.audio.content).toBe(Buffer.from("audio bytes").toString("base64"));
+    expect(fetchMock.mock.calls[0][0]).toBe("https://speech.googleapis.com/v1/speech:recognize");
+    expect(fetchMock.mock.calls[0][1].headers.Authorization).toBe("Bearer test-google-access-token");
   });
 
   it("translates using the explicitly selected source and target", async () => {
@@ -31,6 +37,7 @@ describe("Google Cloud provider adapters", () => {
     const request = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(request.source).toBe("en");
     expect(request.target).toBe("ta");
+    expect(fetchMock.mock.calls[0][0]).toBe("https://translation.googleapis.com/language/translate/v2");
   });
 
   it("returns actual provider audio content for text-to-speech", async () => {
@@ -43,6 +50,16 @@ describe("Google Cloud provider adapters", () => {
   it("does not mislabel unsupported recording formats", async () => {
     await expect(transcribeAudio(Buffer.from("audio"), "audio/mp4", "en"))
       .rejects.toMatchObject({ status: 415 });
+  });
+
+  it("does not send unsupported Odia as an alternative STT language", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      results: [{ alternatives: [{ transcript: "hello" }] }],
+    }), { status: 200, headers: { "content-type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    await transcribeAudio(Buffer.from("audio bytes"), "audio/webm", "hi");
+    const request = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(request.config.alternativeLanguageCodes).not.toContain("or-IN");
   });
 
   it("fails clearly for Odia speech when the selected Google endpoint has no Odia support", async () => {

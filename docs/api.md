@@ -12,17 +12,17 @@ The browser calls Express at `http://localhost:4000`. The React client sends cre
 ## Translation and history (authenticated)
 
 - `POST /api/translate` — JSON `{ "text": "…", "sourceLanguage": "en", "targetLanguage": "hi" }`. Text is limited to 10,000 characters. Runs custom language detection, invokes Cloud Translation, stores the successful translation, and returns both text values and detection evidence.
-- `POST /api/translate/audio` — multipart fields `audio` (WebM/Opus or Ogg/Opus), `sourceLanguage`, and `targetLanguage`. Audio is limited to 12 MiB in memory, sent to Cloud Speech-to-Text, then follows the same translation path. Audio bytes are not saved by the app.
+- `POST /api/translate/audio` — multipart fields `audio` (WebM/Opus or Ogg/Opus), `sourceLanguage`, and `targetLanguage`. Audio is limited to 10 MiB in memory, sent to Cloud Speech-to-Text, then follows the same translation path. Audio bytes are not saved by the app.
 - `POST /api/tts` — JSON `{ "text": "…", "language": "hi" }`; returns provider MP3 as base64 for immediate browser playback.
 - `GET /api/history?limit=25` — returns up to 100 rows for the signed-in account, newest first.
 - `DELETE /api/history/:id` — deletes only a row owned by the signed-in account.
 
-Provider calls require `GOOGLE_CLOUD_API_KEY`; absent credentials produce HTTP 503. The current Speech-to-Text v1 and Text-to-Speech catalogs do not list Odia, so Odia audio requests return 503 pending integration of another provider. Google Translation lists Odia as experimental. Google Cloud error, rate, and supported-language behavior depend on the configured project and billing. The system does not substitute mock translations or speech.
+Provider calls use backend-only Application Default Credentials (ADC) with an OAuth bearer token. For local use, ADC can come from `gcloud auth application-default login`; for an external production host, configure a service-account file through `GOOGLE_APPLICATION_CREDENTIALS` as a mounted secret or use workload identity federation. `GOOGLE_CLOUD_PROJECT` sets the quota project. Missing ADC produces HTTP 503. The current Speech-to-Text v1 and Text-to-Speech catalogs do not list Odia, so Odia audio requests return 503. Google Translation lists Odia as experimental. Google Cloud error, rate, and supported-language behavior depend on the configured project, IAM permissions, and billing. The system does not substitute mock translations or speech.
 
 ## Health checks
 
-- `GET /health` on Express returns API status.
-- `GET /health` on the ML service returns `model_loaded`.
+- `GET /health` on Express returns 200 only when PostgreSQL responds and the FastAPI model is loaded; otherwise it returns 503.
+- `GET /health` on the ML service returns 200 when the model is loaded and 503 otherwise.
 - `POST /predict` on the ML service accepts `{"text":"नमस्ते"}` and returns language/confidence/script evidence.
 
 Account routes and translation routes are rate-limited only for authentication at present; configure upstream quotas and additional per-user limits before a high-traffic public launch. HTTP 401 indicates no valid session, 422 is FastAPI request validation, and 503 means a required dependency is unavailable or unconfigured.

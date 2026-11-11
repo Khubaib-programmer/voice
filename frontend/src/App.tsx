@@ -7,7 +7,8 @@ import {
 } from "lucide-react";
 import { LanguageSelect } from "./components/LanguageSelect";
 import { supportedLanguages, type LanguageCode } from "./languages";
-import { api } from "./lib/api";
+import { api, submitAudioRecording } from "./lib/api";
+import { chooseRecordingMimeType, makeRecordingBlob, microphoneErrorMessage, recordingCapabilityError } from "./lib/recording";
 
 type User = { id: string; email: string };
 type HistoryItem = {
@@ -45,6 +46,7 @@ export default function App() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [working, setWorking] = useState(false);
+  const [requestingMicrophone, setRequestingMicrophone] = useState(false);
   const [recording, setRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [waveform, setWaveform] = useState<number[]>(Array(32).fill(0.08));
@@ -81,6 +83,9 @@ export default function App() {
   useEffect(() => { void refreshHistory(); }, [refreshHistory]);
 
   useEffect(() => () => {
+    if (recorderRef.current?.state === "recording") {
+      try { recorderRef.current.stop(); } catch { /* tracks are stopped below */ }
+    }
     audioStreamRef.current?.getTracks().forEach((track) => track.stop());
     void audioContextRef.current?.close();
   }, []);
@@ -133,7 +138,14 @@ export default function App() {
   }
 
   function stopRecording() {
-    recorderRef.current?.stop();
+    try {
+      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+      else setError("The recorder is not active. Start a new recording and try again.");
+    } catch {
+      setError("The browser could not stop the recording. Check microphone access and try again.");
+      audioStreamRef.current?.getTracks().forEach((track) => track.stop());
+      audioStreamRef.current = null;
+    }
     setRecording(false);
     setWaveform(Array(32).fill(0.08));
     void audioContextRef.current?.close();
@@ -145,38 +157,68 @@ export default function App() {
     setError("");
     setNotice("");
     if (recording) { stopRecording(); return; }
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-      setError("This browser does not support microphone recording.");
+    if (sourceLanguage === "or") {
+      setError("Odia voice input is not supported by the configured Google Speech-to-Text service. Choose Hindi, English, or Tamil for voice input.");
       return;
     }
+    const capabilityError = recordingCapabilityError(
+      window.isSecureContext,
+      Boolean(navigator.mediaDevices?.getUserMedia),
+      typeof window.MediaRecorder === "function",
+    );
+    if (capabilityError) { setError(capabilityError); return; }
+    setRequestingMicrophone(true);
     let stream: MediaStream | null = null;
     try {
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream = micStream;
-      const mimeType = ["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/webm", "audio/ogg"]
-        .find((type) => MediaRecorder.isTypeSupported(type));
-      if (!mimeType) {
-        micStream.getTracks().forEach((track) => track.stop());
-        setError("This browser cannot record WebM/Opus or Ogg/Opus audio required by the speech provider.");
-        return;
+      audioStreamRef.current = micStream;
+      const mimeType = chooseRecordingMimeType((type) => MediaRecorder.isTypeSupported(type));
+      if (!mimeType) throw new Error("This browser cannot record WebM/Opus or Ogg/Opus audio required by the speech service. Try Chrome, Edge, or Firefox.");
+
+      const AudioContextConstructor = window.AudioContext;
+      if (AudioContextConstructor) {
+        try {
+          const context = new AudioContextConstructor();
+          const analyser = context.createAnalyser();
+          analyser.fftSize = 256;
+          context.createMediaStreamSource(micStream).connect(analyser);
+          audioContextRef.current = context;
+          analyserRef.current = analyser;
+        } catch {
+          // Recording does not depend on the optional waveform analyser.
+        }
       }
-      const context = new AudioContext();
-      const analyser = context.createAnalyser();
-      analyser.fftSize = 256;
-      context.createMediaStreamSource(micStream).connect(analyser);
-      audioContextRef.current = context;
-      analyserRef.current = analyser;
       const recorder = new MediaRecorder(micStream, { mimeType });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
       recorder.onstop = () => {
-        setRecordedAudio(new Blob(chunks, { type: mimeType }));
+        try {
+          const blob = makeRecordingBlob(chunks, recorder.mimeType || mimeType);
+          if (!blob.size) throw new Error("No audio was captured. Check that your microphone is unmuted, speak for a moment, then record again.");
+          setRecordedAudio(blob);
+          setError("");
+          setNotice("Recording captured. Select Translate to send it for transcription and translation.");
+        } catch (cause) {
+          setRecordedAudio(null);
+          setError(cause instanceof Error ? cause.message : "No audio was captured. Try recording again.");
+        }
         micStream.getTracks().forEach((track) => track.stop());
         audioStreamRef.current = null;
-        setNotice("Recording ready. Select Translate to transcribe and translate it.");
+        void audioContextRef.current?.close();
+        audioContextRef.current = null;
+        analyserRef.current = null;
+      };
+      recorder.onerror = () => {
+        setRecording(false);
+        setError("The browser encountered an audio recording error. Check microphone access and try again.");
+        micStream.getTracks().forEach((track) => track.stop());
+        audioStreamRef.current = null;
+        void audioContextRef.current?.close();
+        audioContextRef.current = null;
+        analyserRef.current = null;
       };
       recorderRef.current = recorder;
-      audioStreamRef.current = micStream;
       recordingStartedRef.current = Date.now();
       setRecordingSeconds(0);
       setRecordedAudio(null);
@@ -185,12 +227,15 @@ export default function App() {
       setRecording(true);
     } catch (cause) {
       stream?.getTracks().forEach((track) => track.stop());
+      audioStreamRef.current = null;
       void audioContextRef.current?.close();
       audioContextRef.current = null;
       analyserRef.current = null;
-      setError(cause instanceof Error && cause.name === "NotAllowedError"
-        ? "Microphone access was blocked. Allow microphone access and try again."
-        : "Could not start the microphone. Check your browser permissions.");
+      setError(cause instanceof Error && cause.name === "Error" && cause.message.startsWith("This browser cannot record")
+        ? cause.message
+        : microphoneErrorMessage(cause));
+    } finally {
+      setRequestingMicrophone(false);
     }
   }
 
@@ -201,11 +246,7 @@ export default function App() {
     try {
       let data: TranslationResult;
       if (recordedAudio) {
-        const form = new FormData();
-        form.append("audio", recordedAudio, `recording.${recordedAudio.type.includes("ogg") ? "ogg" : "webm"}`);
-        form.append("sourceLanguage", sourceLanguage);
-        form.append("targetLanguage", targetLanguage);
-        data = await api<TranslationResult>("/api/translate/audio", { method: "POST", body: form });
+        data = await submitAudioRecording<TranslationResult>(recordedAudio, sourceLanguage, targetLanguage);
       } else {
         if (!text.trim()) throw new Error("Enter text or record a voice message first.");
         data = await api<TranslationResult>("/api/translate", {
@@ -341,11 +382,11 @@ export default function App() {
                     <div className="mb-4 flex items-center justify-between"><span className="text-xs font-medium text-slate-400">Your message</span><span className="font-mono text-[10px] text-slate-600">{text.length.toLocaleString()} / 10,000</span></div>
                     <textarea value={text} maxLength={10_000} onChange={(event) => { setText(event.target.value); setRecordedAudio(null); setResult(null); }} placeholder="Type a message or record your voice…" className="min-h-[125px] flex-1 resize-none border-0 bg-transparent p-0 text-[15px] leading-7 text-slate-200 placeholder:text-slate-700 focus:ring-0" />
                     <div className="mt-4 flex items-center justify-between gap-3">
-                      <button disabled={sourceLanguage === "or" && !recording} title={sourceLanguage === "or" && !recording ? "Odia voice input is not available with the configured provider." : undefined} onClick={() => void toggleRecording()} className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${recording ? "border-rose-400/25 bg-rose-400/10 text-rose-300" : "border-white/[0.08] bg-white/[0.025] text-slate-400 hover:border-mint/25 hover:text-mint"}`}>
-                        {recording ? <><MicOff size={14} /> Stop recording</> : <><Mic size={14} /> Record voice</>}
+                      <button aria-pressed={recording} disabled={working || requestingMicrophone || (sourceLanguage === "or" && !recording)} title={sourceLanguage === "or" && !recording ? "Odia voice input is not available with the configured provider." : undefined} onClick={() => void toggleRecording()} className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${recording ? "border-rose-400/25 bg-rose-400/10 text-rose-300" : "border-white/[0.08] bg-white/[0.025] text-slate-400 hover:border-mint/25 hover:text-mint"}`}>
+                        {recording ? <><MicOff size={14} /> Stop recording</> : requestingMicrophone ? <><Mic size={14} /> Waiting for microphone…</> : <><Mic size={14} /> Record voice</>}
                       </button>
                       {recording && <span className="flex items-center gap-2 font-mono text-[11px] text-rose-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" /> REC {String(Math.floor(recordingSeconds / 60)).padStart(2, "0")}:{String(recordingSeconds % 60).padStart(2, "0")}</span>}
-                      {!recording && recordedAudio && <span className="flex items-center gap-1.5 text-[11px] text-mint"><Check size={13} /> Voice ready</span>}
+                      {!recording && recordedAudio && <span className="flex items-center gap-1.5 text-[11px] text-mint"><Check size={13} /> Recording ready</span>}
                     </div>
                     {recording && <div role="img" aria-label="Live microphone waveform" className="mt-4 flex h-10 items-center justify-center gap-[3px] overflow-hidden rounded-lg bg-white/[0.025] px-3">
                       {waveform.map((level, index) => <motion.span key={index} className="w-1 rounded-full bg-rose-300/80" animate={{ height: `${Math.max(10, level * 34)}px`, opacity: 0.45 + level * 0.5 }} transition={{ duration: 0.08 }} />)}
@@ -376,7 +417,7 @@ export default function App() {
 
             <section className="mt-5 grid gap-4 sm:grid-cols-3">
               <FeatureCard icon={<AudioLines size={16} />} title="Voice to text" text="Record from your browser microphone." />
-              <FeatureCard icon={<Languages size={16} />} title="12 language directions" text="Translate between Hindi, English, Tamil and Odia." />
+              <FeatureCard icon={<Languages size={16} />} title="Four languages" text="Translate between Hindi, English, Tamil and Odia." />
               <FeatureCard icon={<Headphones size={16} />} title="Listen back" text="Play the translated voice output." />
             </section>
             <div className="mt-7 flex items-center justify-center gap-2 text-[10px] text-slate-700"><Clock3 size={12} /> History is saved to your account. Audio recordings are not stored.</div>

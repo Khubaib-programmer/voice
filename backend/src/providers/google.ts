@@ -1,6 +1,7 @@
-import { config } from "../config.js";
 import { httpError } from "../http.js";
 import type { LanguageCode } from "../languages.js";
+import { isSupportedRecordingMimeType } from "../audio.js";
+import { googleAuthorizationHeaders } from "./google-auth.js";
 
 const GOOGLE_LANGUAGES: Record<LanguageCode, string> = {
   hi: "hi-IN",
@@ -9,19 +10,13 @@ const GOOGLE_LANGUAGES: Record<LanguageCode, string> = {
   or: "or-IN",
 };
 
-function requireGoogleKey() {
-  if (!config.GOOGLE_CLOUD_API_KEY) {
-    throw httpError(503, "Speech and translation providers are not configured. Set GOOGLE_CLOUD_API_KEY on the backend.");
-  }
-  return config.GOOGLE_CLOUD_API_KEY;
-}
-
 async function googlePost(url: string, body: unknown, providerName: string) {
+  const authorization = await googleAuthorizationHeaders();
   let response: Response;
   try {
     response = await fetch(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...authorization },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(30_000),
     });
@@ -37,14 +32,14 @@ async function googlePost(url: string, body: unknown, providerName: string) {
 }
 
 export async function transcribeAudio(audio: Buffer, mimeType: string, source: LanguageCode) {
-  const key = requireGoogleKey();
-  const encoding = mimeType.includes("ogg") ? "OGG_OPUS" : mimeType.includes("webm") ? "WEBM_OPUS" : null;
+  const normalizedMimeType = isSupportedRecordingMimeType(mimeType) ? mimeType.split(";", 1)[0].trim().toLowerCase() : null;
+  const encoding = normalizedMimeType === "audio/ogg" ? "OGG_OPUS" : normalizedMimeType === "audio/webm" ? "WEBM_OPUS" : null;
   if (!encoding) throw httpError(415, "Use a WebM/Opus or Ogg/Opus recording for speech recognition.");
   if (source === "or") {
     throw httpError(503, "Google Cloud Speech-to-Text v1 does not list Odia support. Configure an Odia-capable speech provider before using Odia voice input.");
   }
   const payload = await googlePost(
-    `https://speech.googleapis.com/v1/speech:recognize?key=${encodeURIComponent(key)}`,
+    "https://speech.googleapis.com/v1/speech:recognize",
     {
       config: {
         encoding,
@@ -67,14 +62,13 @@ export async function transcribeAudio(audio: Buffer, mimeType: string, source: L
 
 function supportedProviderLanguages(source: LanguageCode) {
   return (Object.keys(GOOGLE_LANGUAGES) as LanguageCode[])
-    .filter((language) => language !== source)
+    .filter((language) => language !== source && language !== "or")
     .map((language) => GOOGLE_LANGUAGES[language]);
 }
 
 export async function translateText(text: string, source: LanguageCode, target: LanguageCode) {
-  const key = requireGoogleKey();
   const payload = await googlePost(
-    `https://translation.googleapis.com/language/translate/v2?key=${encodeURIComponent(key)}`,
+    "https://translation.googleapis.com/language/translate/v2",
     {
       q: text,
       source: GOOGLE_LANGUAGES[source].split("-")[0],
@@ -91,12 +85,11 @@ export async function translateText(text: string, source: LanguageCode, target: 
 }
 
 export async function synthesizeSpeech(text: string, language: LanguageCode) {
-  const key = requireGoogleKey();
   if (language === "or") {
     throw httpError(503, "Google Cloud Text-to-Speech does not list an Odia voice. Configure an Odia-capable TTS provider before using Odia playback.");
   }
   const payload = await googlePost(
-    `https://texttospeech.googleapis.com/v1/text:synthesize?key=${encodeURIComponent(key)}`,
+    "https://texttospeech.googleapis.com/v1/text:synthesize",
     {
       input: { text },
       voice: { languageCode: GOOGLE_LANGUAGES[language] },

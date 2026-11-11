@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
+import { isSupportedRecordingMimeType } from "../audio.js";
 import { requireUser } from "../auth.js";
 import { config } from "../config.js";
 import { prisma } from "../db.js";
@@ -15,7 +16,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: config.MAX_AUDIO_BYTES, files: 1 },
   fileFilter: (_req, file, callback) => {
-    if (["audio/webm", "audio/ogg"].includes(file.mimetype)) callback(null, true);
+    if (isSupportedRecordingMimeType(file.mimetype)) callback(null, true);
     else callback(httpError(415, "Use a WebM/Opus or Ogg/Opus recording."));
   },
 });
@@ -45,6 +46,7 @@ router.post("/translate", asyncRoute(async (req, res) => {
 
 router.post("/translate/audio", upload.single("audio"), asyncRoute(async (req, res) => {
   if (!req.file) throw httpError(400, "Select a voice recording first.");
+  if (!req.file.size) throw httpError(400, "The recording is empty. Record a short message and try again.");
   const input = translationInput.omit({ text: true }).parse(req.body);
   const transcript = await transcribeAudio(req.file.buffer, req.file.mimetype, input.sourceLanguage as "hi" | "en" | "ta" | "or");
   const result = await processTranslation(transcript, input.sourceLanguage as "hi" | "en" | "ta" | "or", input.targetLanguage as "hi" | "en" | "ta" | "or", res.locals.userId);

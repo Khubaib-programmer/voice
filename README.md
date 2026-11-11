@@ -17,13 +17,13 @@ The language identifier is an original project component. Its target is 500 samp
 
 Requirements: Node.js 22+, Python 3.12, PostgreSQL 16+, and a Google Cloud project with Speech-to-Text, Translation, and Text-to-Speech APIs enabled.
 
-1. Create PostgreSQL database `voice_translator` and copy `backend/.env.example` to `backend/.env`. Set `DATABASE_URL`, a random `COOKIE_SECRET` of at least 32 characters, and `GOOGLE_CLOUD_API_KEY`.
+1. Create PostgreSQL database `voice_translator` and copy `backend/.env.example` to `backend/.env`. Set `DATABASE_URL`, a random `COOKIE_SECRET` of at least 32 characters, and `GOOGLE_CLOUD_PROJECT`. Configure Google ADC locally with `gcloud auth application-default login`; do not add provider secrets to frontend variables.
 2. Install and launch backend: `cd backend && npm ci && npm run db:generate && npm run db:deploy && npm run dev`.
 3. Launch the ML service from `ml-service/`: `PYTHONPATH=src MODEL_PATH=artifacts/real-source-run/best_model.joblib .venv312/bin/uvicorn indic_id.api:app --host 127.0.0.1 --port 8000` (use your Python environment's `uvicorn` if it is not `.venv312`).
 4. Copy `frontend/.env.example` to `frontend/.env`, then run `cd frontend && npm ci && npm run dev`.
 5. Open `http://localhost:5173`. Microphone capture requires user permission; production capture requires HTTPS.
 
-For the actual local integration results and remaining dependency gaps, see the [integration report](docs/integration-report.md). For container deployment, see [Deployment](docs/deployment.md). The saved model file is intentionally excluded from Git; mount or securely provide `ml-service/artifacts/real-source-run/best_model.joblib` and verify its hash in the ML audit before starting the ML container.
+For the actual local integration results and remaining dependency gaps, see the [integration report](docs/integration-report.md). Production variables, Google credentials, account setup, hosting recommendation, and deployment gate are in the [production setup checklist](docs/production-setup-checklist.md). The saved model file is intentionally excluded from Git; mount or securely provide `ml-service/artifacts/real-source-run/best_model.joblib` and verify its hash in the ML audit before starting the ML container.
 
 Run independent checks with `cd ml-service && PYTHONPATH=src .venv312/bin/python -m pytest -q`, `cd backend && npm test && npm run build`, and `cd frontend && npm test && npm run build`.
 

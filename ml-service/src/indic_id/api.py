@@ -6,6 +6,7 @@ from pathlib import Path
 
 import joblib
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from indic_id.model import LanguageIdentifier
@@ -47,9 +48,13 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Indic Language Identification", version="0.1.0", lifespan=lifespan)
 
 
-@app.get("/health")
+@app.get("/health", response_model=None)
 def health():
-    return {"status": "ok", "model_loaded": identifier is not None}
+    loaded = identifier is not None
+    return JSONResponse(
+        status_code=200 if loaded else 503,
+        content={"status": "ok" if loaded else "unavailable", "model_loaded": loaded},
+    )
 
 
 @app.post("/predict")

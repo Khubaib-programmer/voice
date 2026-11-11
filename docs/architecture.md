@@ -14,7 +14,7 @@ Node.js + Express ---- Prisma ---- PostgreSQL
         +---- configured speech, translation, and TTS providers
 ```
 
-Speech-to-text, translation, and text-to-speech adapters use Google Cloud Speech-to-Text v1, Cloud Translation v2, and Cloud Text-to-Speech, configured through `GOOGLE_CLOUD_API_KEY`. The custom language detector remains the local FastAPI model. These are third-party services; the application does not claim to have trained their models. The current Google Speech-to-Text v1 and Text-to-Speech language catalogs do not list Odia support, so Odia voice input and Odia speech playback return an explicit HTTP 503 until an Odia-capable provider is configured. Cloud Translation lists Odia as experimental. A missing key returns HTTP 503 instead of sample or mock output.
+Speech-to-text, translation, and text-to-speech adapters use Google Cloud Speech-to-Text v1, Cloud Translation v2, and Cloud Text-to-Speech with backend-only Application Default Credentials (OAuth bearer token). `GOOGLE_CLOUD_PROJECT` sets the provider quota project; `GOOGLE_APPLICATION_CREDENTIALS` points to a mounted service-account secret when the runtime does not provide ADC. The custom language detector remains the local FastAPI model. These are third-party services; the application does not claim to have trained their models. The current Google Speech-to-Text v1 and Text-to-Speech language catalogs do not list Odia support, so Odia voice input and Odia speech playback return an explicit HTTP 503. Cloud Translation lists Odia as experimental. Missing ADC returns HTTP 503 instead of sample or mock output.
 
 ## Language scope
 
@@ -25,7 +25,7 @@ Supported language codes are `hi` (Hindi), `en` (English), `ta` (Tamil), and `or
 - Frontend handles recording permissions, source/target selection, transcript and translation display, copy/playback controls, loading/error states, and history UI.
 - Backend validates requests, handles authentication, persists history, and coordinates service calls.
 - ML service exposes language/script prediction and experiment metadata; model artifacts are generated locally from documented data and are not committed.
-- PostgreSQL stores user and history records. Secrets and provider keys are supplied through environment variables.
+- PostgreSQL stores user and history records. Google Cloud provider access uses backend-only Application Default Credentials (ADC); project configuration and other secrets are supplied through environment variables or mounted secrets.
 
 ## Implemented request flow
 

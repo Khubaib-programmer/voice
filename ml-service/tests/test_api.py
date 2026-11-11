@@ -8,6 +8,9 @@ from indic_id.model import LanguageIdentifier, compare_models
 def test_predict_requires_trained_artifact(monkeypatch):
     monkeypatch.setattr(api, "identifier", None)
     client = TestClient(api.app)
+    health = client.get("/health")
+    assert health.status_code == 503
+    assert health.json() == {"status": "unavailable", "model_loaded": False}
     response = client.post("/predict", json={"text": "hello world"})
     assert response.status_code == 503
     assert "train a model" in response.json()["detail"]
