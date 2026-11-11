@@ -1,5 +1,4 @@
-import type { LanguageCode } from "../languages";
-import { supportedLanguages } from "../languages";
+import { supportedLanguages, type LanguageCode } from "../languages";
 
 type LanguageSelectProps = {
   id: string;
@@ -10,11 +9,11 @@ type LanguageSelectProps = {
 
 export function LanguageSelect({ id, label, value, onChange }: LanguageSelectProps) {
   return (
-    <label className="grid gap-2 text-sm font-semibold text-forest" htmlFor={id}>
+    <label className="grid gap-2 font-display text-[11px] font-semibold uppercase tracking-[.18em] text-sand" htmlFor={id}>
       {label}
       <select
         id={id}
-        className="glass-select w-full rounded-xl border px-3 py-3 text-sm outline-none transition focus:border-purple focus:ring-2 focus:ring-purple/20"
+        className="glass-select px-3 py-3 font-sans text-sm normal-case tracking-normal outline-none transition"
         value={value}
         onChange={(event) => onChange(event.target.value as LanguageCode)}
       >

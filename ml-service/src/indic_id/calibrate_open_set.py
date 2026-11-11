@@ -163,7 +163,7 @@ def calibrate(data_path, unknown_path, model_path, output_path, training_evaluat
         for row in known
     ]
     train_indices, validation_indices, test_indices = _split_indices(
-        [_parts(row, i) for i, row in enumerate(examples)], random_state
+        [_parts(row) for row in examples], random_state
     )
     training = [examples[i] for i in train_indices]
     validation = [examples[i] for i in validation_indices]

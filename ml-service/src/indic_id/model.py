@@ -27,7 +27,7 @@ def _pipeline(estimator):
     ])
 
 
-def _parts(example, index):
+def _parts(example):
     text, label = example[0], example[1]
     group = example[2] if len(example) >= 3 else "text-" + hashlib.sha256(str(text).encode("utf-8")).hexdigest()
     category = example[3] if len(example) >= 4 else "unspecified"
@@ -150,7 +150,7 @@ def _tune_rejection(model, validation, target_accuracy: float = 0.98):
 
 
 def compare_models(examples, random_state: int = 42):
-    rows = [_parts(example, i) for i, example in enumerate(examples)]
+    rows = [_parts(example) for example in examples]
     if len({row[1] for row in rows}) < 2:
         raise ValueError("At least two language classes are needed")
     train_idx, val_idx, test_idx = _split_indices(rows, random_state)

@@ -28,6 +28,9 @@ models/*.pkl
 ml-service/artifacts/*.joblib
 ml-service/artifacts/**/*.joblib
 ml-service/artifacts/real-source-run/
+!ml-service/artifacts/real-source-run/
+ml-service/artifacts/real-source-run/*
+!ml-service/artifacts/real-source-run/best_model.joblib
 ml-service/data/raw/
 ml-service/data/processed/
 *.parquet
