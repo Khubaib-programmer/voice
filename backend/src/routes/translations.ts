@@ -21,11 +21,19 @@ const upload = multer({
   },
 });
 
-const translationInput = z.object({
-  text: z.string().trim().min(1).max(10_000),
+const languagePair = {
   sourceLanguage: z.string().refine(isLanguageCode, "Unsupported source language"),
   targetLanguage: z.string().refine(isLanguageCode, "Unsupported target language"),
+};
+
+const translationInput = z.object({
+  text: z.string().trim().min(1).max(10_000),
+  ...languagePair,
 }).refine((value) => value.sourceLanguage !== value.targetLanguage, {
+  message: "Choose different source and target languages.",
+});
+
+const audioTranslationInput = z.object(languagePair).refine((value) => value.sourceLanguage !== value.targetLanguage, {
   message: "Choose different source and target languages.",
 });
 
@@ -47,7 +55,7 @@ router.post("/translate", asyncRoute(async (req, res) => {
 router.post("/translate/audio", upload.single("audio"), asyncRoute(async (req, res) => {
   if (!req.file) throw httpError(400, "Select a voice recording first.");
   if (!req.file.size) throw httpError(400, "The recording is empty. Record a short message and try again.");
-  const input = translationInput.omit({ text: true }).parse(req.body);
+  const input = audioTranslationInput.parse(req.body);
   const transcript = await transcribeAudio(req.file.buffer, req.file.mimetype, input.sourceLanguage as "hi" | "en" | "ta" | "or");
   const result = await processTranslation(transcript, input.sourceLanguage as "hi" | "en" | "ta" | "or", input.targetLanguage as "hi" | "en" | "ta" | "or", res.locals.userId);
   res.json({ ...result, transcription: transcript });
