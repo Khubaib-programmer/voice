@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AudioLines, Check, ChevronRight, Copy, LogOut, Mic, MicOff, Pause, Play, Sparkles, Square, Volume2, WandSparkles, X } from "lucide-react";
+import { AudioLines, Check, ChevronRight, Copy, LoaderCircle, LogOut, Mic, MicOff, Pause, Play, Sparkles, Square, UserRound, Volume2, WandSparkles, X } from "lucide-react";
 import { LanguageSelect } from "./components/LanguageSelect";
 import { supportedLanguages, type LanguageCode } from "./languages";
 import { api, submitAudioRecording } from "./lib/api";
 import { chooseRecordingMimeType, makeRecordingBlob, microphoneErrorMessage, recordingCapabilityError } from "./lib/recording";
-import { createTranslatedUtterance, matchingVoice, missingVoiceMessage } from "./lib/speech";
+import { createTranslatedUtterance, loadAvailableVoices, matchingVoice, missingVoiceMessage } from "./lib/speech";
 import { canTranslate, detectionStatus, modelScoreLabel } from "./lib/detection";
 
 type User = { id: string; email: string };
@@ -30,6 +30,7 @@ const languageName = (code: string) => supportedLanguages.find((language) => lan
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
+  const [slowRequest, setSlowRequest] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +50,8 @@ export default function App() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [copied, setCopied] = useState(false);
-  const [speechState, setSpeechState] = useState<"idle" | "speaking" | "paused">("idle");
+  const [signingOut, setSigningOut] = useState(false);
+  const [speechState, setSpeechState] = useState<"idle" | "loading" | "speaking" | "paused">("idle");
   const recorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -57,7 +59,19 @@ export default function App() {
   const recordingStartedRef = useRef(0);
   const detectionSequence = useRef(0);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const speechRequestRef = useRef(0);
   const mountedRef = useRef(false);
+
+  useEffect(() => {
+    const pending = booting || work !== "idle" || detectionBusy;
+    if (!pending) {
+      setSlowRequest(false);
+      return;
+    }
+    setSlowRequest(false);
+    const timeout = window.setTimeout(() => setSlowRequest(true), 8_000);
+    return () => window.clearTimeout(timeout);
+  }, [booting, work, detectionBusy]);
 
   useEffect(() => {
     api<{ user: User }>("/api/auth/me")
@@ -154,13 +168,20 @@ export default function App() {
   }
 
   async function signOut() {
+    if (signingOut) return;
+    setSigningOut(true);
     stopPlayback();
     try {
       await api("/api/auth/logout", { method: "POST" });
       setUser(null);
+      setAuthMode("login");
+      setEmail("");
+      setPassword("");
       clearWorkspace();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Sign out could not be completed. Please retry.");
+    } finally {
+      setSigningOut(false);
     }
   }
 
@@ -319,27 +340,10 @@ export default function App() {
   }
 
   function stopPlayback() {
+    speechRequestRef.current += 1;
     if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     utteranceRef.current = null;
     setSpeechState("idle");
-  }
-
-  function loadAvailableVoices(): Promise<SpeechSynthesisVoice[]> {
-    const synth = window.speechSynthesis;
-    const current = synth.getVoices();
-    if (current.length) return Promise.resolve(current);
-    return new Promise((resolve) => {
-      const timeout = window.setTimeout(() => {
-        synth.removeEventListener("voiceschanged", onVoices);
-        resolve(synth.getVoices());
-      }, 1500);
-      const onVoices = () => {
-        window.clearTimeout(timeout);
-        synth.removeEventListener("voiceschanged", onVoices);
-        resolve(synth.getVoices());
-      };
-      synth.addEventListener("voiceschanged", onVoices, { once: true });
-    });
   }
 
   async function playTranslation() {
@@ -349,27 +353,41 @@ export default function App() {
       return;
     }
     stopPlayback();
+    const requestId = speechRequestRef.current;
+    setSpeechState("loading");
     setError("");
     try {
-      const voice = matchingVoice(await loadAvailableVoices(), result.targetLanguage);
-      if (!voice) { setError(missingVoiceMessage(result.targetLanguage)); return; }
+      const voices = await loadAvailableVoices(window.speechSynthesis, result.targetLanguage);
+      if (requestId !== speechRequestRef.current) return;
+      const voice = matchingVoice(voices, result.targetLanguage);
+      if (!voice) {
+        setSpeechState("idle");
+        setError(missingVoiceMessage(result.targetLanguage));
+        return;
+      }
       const utterance = createTranslatedUtterance(result.translatedText, voice);
       utterance.onstart = () => { if (utteranceRef.current === utterance) setSpeechState("speaking"); };
       utterance.onend = () => { if (utteranceRef.current === utterance) setSpeechState("idle"); };
       utterance.onerror = (event) => {
-        if (utteranceRef.current !== utterance || event.error === "canceled" || event.error === "interrupted") return;
+        if (utteranceRef.current !== utterance) return;
         setSpeechState("idle");
+        if (event.error === "canceled" || event.error === "interrupted") return;
         setError("Speech playback stopped unexpectedly. Check the selected system voice and try again.");
       };
       utteranceRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Speech playback could not start.");
+      if (requestId === speechRequestRef.current) {
+        setSpeechState("idle");
+        setError(cause instanceof Error ? cause.message : "Speech playback could not start.");
+      }
     }
   }
 
   function togglePlayback() {
-    if (speechState === "speaking") {
+    if (speechState === "loading") {
+      stopPlayback();
+    } else if (speechState === "speaking") {
       window.speechSynthesis.pause();
       setSpeechState("paused");
     } else if (speechState === "paused") {
@@ -378,26 +396,42 @@ export default function App() {
     } else void playTranslation();
   }
 
-  if (booting) return <Scene><div className="grid min-h-screen place-items-center text-warm-white"><AudioLines className="animate-pulse text-sand" /></div></Scene>;
-  if (!user) return <AuthScreen {...{ authMode, setAuthMode, email, setEmail, password, setPassword, authError, working: work !== "idle", submitAuth }} />;
+  if (booting) return <Scene><div className="grid min-h-screen place-items-center"><div className="flex flex-col items-center gap-4"><img src="/vaani-icon.png" alt="Vaani Logo" className="h-16 w-16 animate-pulse rounded-xl object-contain" /><p role="status" className="text-sm text-sand/80">{slowRequest ? "The service may be waking after inactivity. This can take a little longer." : "Connecting to Vaani…"}</p></div></div></Scene>;
+  if (!user) return <AuthScreen {...{ authMode, setAuthMode, email, setEmail, password, setPassword, authError, working: work !== "idle", slowRequest, submitAuth }} />;
 
   const sameLanguage = Boolean(detection && detection.language !== "unknown" && detection.language === targetLanguage);
   const translateEnabled = canTranslate(text, detection, detectionText, targetLanguage);
 
   return <Scene>
     <main className="relative mx-auto min-h-screen max-w-6xl px-4 pb-16 pt-5 sm:px-8 lg:px-10 lg:pt-8">
-      <header className="glass-nav flex items-center justify-between rounded-full px-3 py-2.5 sm:px-4">
+      <header className="glass-nav flex flex-col gap-3 rounded-3xl px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:rounded-full sm:px-4 sm:py-2.5">
         <Brand />
-        <button onClick={() => void signOut()} className="glass-utility inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium transition"><LogOut size={14} /><span className="hidden sm:inline">Sign out</span></button>
+        <div className="account-actions">
+          <div className="account-summary" aria-label="Signed-in account">
+            <span className="account-avatar" aria-hidden="true"><UserRound size={17} /></span>
+            <span className="account-copy">
+              <span className="account-state"><span className="account-status-dot" />Signed in</span>
+              <span className="account-email" title={user.email}>{user.email}</span>
+            </span>
+          </div>
+          <button
+            onClick={() => void signOut()}
+            disabled={signingOut}
+            className="logout-control"
+            aria-label={signingOut ? "Signing out" : "Sign out"}
+          >
+            {signingOut ? <LoaderCircle size={15} className="animate-spin" /> : <LogOut size={15} />}
+            <span>{signingOut ? "Signing out…" : "Sign out"}</span>
+          </button>
+        </div>
       </header>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 mt-10 flex flex-col justify-between gap-6 sm:mt-14 lg:flex-row lg:items-end">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8 mt-8 flex flex-col justify-between gap-5 sm:mt-12 lg:mt-14 lg:flex-row lg:items-end">
         <div className="max-w-2xl">
           <p className="mb-4 flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[.28em] text-sand"><span className="h-1.5 w-1.5 rounded-full bg-purple shadow-[0_0_12px_#8B5CF6]" /> Voice studio</p>
           <h1 className="font-display text-4xl font-extrabold leading-[1.02] tracking-[-.045em] text-warm-white sm:text-6xl">Say it once.<br />Hear it anywhere.</h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-sand">Hindi, English, Tamil, and Odia. The translation in front of you stays in this session.</p>
         </div>
-        <p className="font-display text-[11px] uppercase tracking-[.18em] text-sand/80">Signed in as <span className="mt-1 block text-sm font-semibold normal-case tracking-normal text-warm-white">{user.email}</span></p>
       </motion.div>
 
       <section className="glass-stage overflow-hidden rounded-[32px]">
@@ -433,6 +467,7 @@ export default function App() {
                   {detection?.reason === "ambiguous" && <span>Low confidence is not treated as a language guess.</span>}
                 </div>
                 {detectionError && <p role="alert" className="mt-2 text-[11px] text-[#F3C7C2]">Detection failed: {detectionError}</p>}
+                {detectionBusy && slowRequest && <p role="status" className="mt-2 text-[11px] text-sand/75">The language service may be waking after inactivity. Detection is still in progress.</p>}
                 {sameLanguage && <p role="status" className="mt-2 text-[11px] text-[#DDD6FE]">The target matches the detected source. Choose a different target language.</p>}
               </section>
               <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-5">
@@ -512,7 +547,13 @@ export default function App() {
             </div>
           )}
           {notice && <p role="status" className="status-note rounded-2xl px-4 py-3 text-xs">{notice}</p>}
-          <p className="px-1 text-[11px] leading-5 text-sand/75">Record naturally in Hindi, English, Tamil, or Odia. Whisper transcribes without a language hint; Odia recognition has not been independently verified. Vaani’s custom model detects the transcript language. Audio is processed for transcription and not stored.</p>
+          {work !== "idle" && slowRequest && <p role="status" className="status-note rounded-2xl px-4 py-3 text-xs leading-5">This request is taking longer than usual. A hosted service may be waking after inactivity; keep this page open while it finishes.</p>}
+          <section aria-labelledby="about-vaani" className="about-panel rounded-2xl px-5 py-5 sm:px-6 sm:py-6">
+            <p id="about-vaani" className="font-display text-[10px] font-bold uppercase tracking-[.24em] text-sand">About Vaani</p>
+            <p className="mt-3 max-w-3xl font-display text-base font-semibold leading-7 text-warm-white sm:text-lg">Communicate across languages with AI-powered speech recognition and translation.</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-sand/90">Speak naturally in Hindi, English, Tamil, or Odia. Vaani uses Whisper to transcribe your speech, a custom machine-learning model to identify the transcript language, and AI-powered translation to help you communicate across language barriers.</p>
+            <p className="mt-4 border-t border-sand/15 pt-4 text-xs leading-5 text-sand/70">Your audio is processed for transcription and is not stored. Translation playback depends on the speech voices available on your device or browser. Odia recognition is currently experimental and has not been independently verified.</p>
+          </section>
         </div>
       </section>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-sand/70">
@@ -532,6 +573,7 @@ type AuthProps = {
   setPassword: (value: string) => void;
   authError: string;
   working: boolean;
+  slowRequest: boolean;
   submitAuth: (event: FormEvent) => void;
 };
 
@@ -564,7 +606,7 @@ function Waveform({ levels }: { levels: number[] }) {
 }
 
 function PlaybackBar({ speechState, language, copied, onToggle, onStop, onCopy }: {
-  speechState: "idle" | "speaking" | "paused";
+  speechState: "idle" | "loading" | "speaking" | "paused";
   language: string;
   copied: boolean;
   onToggle: () => void;
@@ -576,17 +618,17 @@ function PlaybackBar({ speechState, language, copied, onToggle, onStop, onCopy }
     <div className="mt-5 border-t border-sand/15 pt-4">
       <div className="flex items-center gap-3">
         <button
-          aria-label={speechState === "speaking" ? "Pause translated speech" : speechState === "paused" ? "Resume translated speech" : "Play translated speech"}
+          aria-label={speechState === "loading" ? "Cancel speech voice loading" : speechState === "speaking" ? "Pause translated speech" : speechState === "paused" ? "Resume translated speech" : "Play translated speech"}
           onClick={onToggle}
           className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl transition ${playing ? "audio-control audio-live" : "audio-control"}`}
         >
-          {speechState === "paused" ? <Play size={21} fill="currentColor" /> : speechState === "speaking" ? <Pause size={21} fill="currentColor" /> : <Volume2 size={22} />}
+          {speechState === "loading" ? <LoaderCircle size={21} className="animate-spin" /> : speechState === "paused" ? <Play size={21} fill="currentColor" /> : speechState === "speaking" ? <Pause size={21} fill="currentColor" /> : <Volume2 size={22} />}
         </button>
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-warm-white">{speechState === "speaking" ? "Speaking translation" : speechState === "paused" ? "Playback paused" : "Listen to translation"}</div>
-          <div className="mt-1 text-[11px] text-sand/75">{language} · browser speech voice</div>
+          <div className="text-sm font-semibold text-warm-white">{speechState === "loading" ? "Loading speech voice…" : speechState === "speaking" ? "Speaking translation" : speechState === "paused" ? "Playback paused" : "Listen to translation"}</div>
+          <div className="mt-1 text-[11px] text-sand/75">{speechState === "loading" ? `Checking for an available ${language} voice` : `${language} · browser speech voice`}</div>
           {playing && (
-            <div className="mt-2 flex h-4 items-center gap-[3px]" aria-label="Translated speech playing">
+            <div className="mt-2 flex h-4 items-center gap-[3px]" aria-label={speechState === "loading" ? "Waiting for a speech voice" : speechState === "paused" ? "Translated speech paused" : "Translated speech playing"}>
               {Array.from({ length: 24 }, (_, index) => (
                 <motion.span key={index} className="w-1 rounded-full bg-purple" animate={{ height: speechState === "speaking" ? [4, 7 + (index % 4) * 2, 4] : 4 }} transition={{ repeat: Infinity, duration: 0.55, delay: index * 0.02 }} />
               ))}
@@ -631,6 +673,7 @@ function AuthScreen(props: AuthProps) {
               {props.working ? "Please wait…" : props.authMode === "login" ? "Sign in" : "Create account"}
               <ChevronRight size={15} />
             </button>
+            {props.working && props.slowRequest && <p role="status" className="status-note rounded-xl px-3 py-2.5 text-xs leading-5">The service may be waking after inactivity. This request is still in progress.</p>}
           </form>
           <p className="mt-6 text-center text-sm text-sand">{props.authMode === "login" ? "New to Vaani?" : "Already have an account?"} <button onClick={() => props.setAuthMode(props.authMode === "login" ? "signup" : "login")} className="ml-1 font-semibold text-[#DDD6FE] underline decoration-purple/70 underline-offset-4 hover:text-warm-white">{props.authMode === "login" ? "Create an account" : "Sign in"}</button></p>
         </div>
@@ -646,25 +689,12 @@ function Brand() {
       <BrandSeal />
       <div>
         <p className="wordmark text-warm-white">Vaani</p>
-        <p className="mt-1 text-[9px] font-semibold uppercase tracking-[.22em] text-sand/80">Voice translator</p>
+        <p className="mt-1 text-[9px] font-semibold uppercase tracking-[.18em] text-sand/80">AI Voice Translator</p>
       </div>
     </div>
   );
 }
 
 function BrandSeal() {
-  return (
-    <svg className="brand-seal" viewBox="0 0 48 48" aria-hidden="true">
-      <defs>
-        <linearGradient id="vaaniSeal" x1="6" y1="4" x2="42" y2="46" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#C4B5FD" />
-          <stop offset="1" stopColor="#6D28D9" />
-        </linearGradient>
-      </defs>
-      <circle cx="24" cy="24" r="22" fill="url(#vaaniSeal)" />
-      <circle cx="24" cy="24" r="17.5" fill="none" stroke="rgba(250,248,242,.38)" strokeWidth="1.1" />
-      <path d="M15 15.5 24 34 33 15.5" fill="none" stroke="#FAF8F2" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="24" cy="34" r="1.35" fill="#FAF8F2" />
-    </svg>
-  );
+  return <img src="/vaani-navbar.png" alt="Vaani Logo" className="brand-seal rounded-xl object-contain" />;
 }
