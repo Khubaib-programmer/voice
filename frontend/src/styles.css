@@ -168,6 +168,23 @@ h1, h2, h3, .font-display {
   background: rgba(11, 41, 32, .22);
 }
 
+.ml-warmup-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  max-width: 100%;
+  border: 1px solid rgba(232, 220, 197, .16);
+  border-radius: 9999px;
+  background: rgba(250, 248, 242, .045);
+  padding: .42rem .7rem;
+  color: rgba(232, 220, 197, .82);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.ml-warmup-ready { color: #d5f1df; border-color: rgba(146, 219, 171, .24); }
+.ml-warmup-unavailable { color: #f2d9d5; border-color: rgba(243, 199, 194, .24); }
+
 @media (max-width: 767px) {
   .glass-pane + .glass-pane {
     border-top: 1px solid rgba(232, 220, 197, .14);

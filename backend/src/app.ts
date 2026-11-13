@@ -8,6 +8,7 @@ import { prisma } from "./db.js";
 import { errorHandler } from "./http.js";
 import authRoutes from "./routes/auth.js";
 import translationRoutes from "./routes/translations.js";
+import mlStatusRoutes from "./routes/ml-status.js";
 
 const allowedOrigins = new Set([
   config.FRONTEND_ORIGIN,
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "64kb" }));
 app.use(cookieParser());
 app.use("/api/auth", rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false }), authRoutes);
+app.use("/api/ml", mlStatusRoutes);
 app.use("/api", translationRoutes);
 app.get("/health", (_req, res) => {
   res.status(200).json({

@@ -7,6 +7,7 @@ import { api, submitAudioRecording } from "./lib/api";
 import { chooseRecordingMimeType, makeRecordingBlob, microphoneErrorMessage, recordingCapabilityError } from "./lib/recording";
 import { createTranslatedUtterance, loadAvailableVoices, matchingVoice, missingVoiceMessage } from "./lib/speech";
 import { canTranslate, detectionStatus, modelScoreLabel } from "./lib/detection";
+import { mlWarmupMessage, watchMlWarmup, type MlWarmupState } from "./lib/ml-warmup";
 
 type User = { id: string; email: string };
 type Detection = {
@@ -30,6 +31,7 @@ const languageName = (code: string) => supportedLanguages.find((language) => lan
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
+  const [mlWarmup, setMlWarmup] = useState<MlWarmupState>("starting");
   const [slowRequest, setSlowRequest] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -79,6 +81,11 @@ export default function App() {
       .catch(() => undefined)
       .finally(() => setBooting(false));
   }, []);
+
+  useEffect(() => watchMlWarmup(
+    (signal) => api<{ state: MlWarmupState }>("/api/ml/status", { signal }),
+    setMlWarmup,
+  ), []);
 
   useEffect(() => {
     const sequence = ++detectionSequence.current;
@@ -396,8 +403,8 @@ export default function App() {
     } else void playTranslation();
   }
 
-  if (booting) return <Scene><div className="grid min-h-screen place-items-center"><div className="flex flex-col items-center gap-4"><img src="/vaani-icon.png" alt="Vaani Logo" className="h-16 w-16 animate-pulse rounded-xl object-contain" /><p role="status" className="text-sm text-sand/80">{slowRequest ? "The service may be waking after inactivity. This can take a little longer." : "Connecting to Vaani…"}</p></div></div></Scene>;
-  if (!user) return <AuthScreen {...{ authMode, setAuthMode, email, setEmail, password, setPassword, authError, working: work !== "idle", slowRequest, submitAuth }} />;
+  if (booting) return <Scene><div className="grid min-h-screen place-items-center"><div className="flex flex-col items-center gap-4"><img src="/vaani-icon.png" alt="Vaani Logo" className="h-16 w-16 animate-pulse rounded-xl object-contain" /><p role="status" className="text-sm text-sand/80">{slowRequest ? "The service may be waking after inactivity. This can take a little longer." : "Connecting to Vaani…"}</p><MlWarmupIndicator state={mlWarmup} /></div></div></Scene>;
+  if (!user) return <AuthScreen {...{ authMode, setAuthMode, email, setEmail, password, setPassword, authError, working: work !== "idle", slowRequest, submitAuth, mlWarmup }} />;
 
   const sameLanguage = Boolean(detection && detection.language !== "unknown" && detection.language === targetLanguage);
   const translateEnabled = canTranslate(text, detection, detectionText, targetLanguage);
@@ -443,7 +450,10 @@ export default function App() {
               <p className="text-[11px] text-sand/80">Workspace</p>
             </div>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-sand/20 bg-warm-white/5 px-3 py-1.5 text-[11px] text-sand"><Sparkles size={13} className="text-purple" /> Custom language detection</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-sand/20 bg-warm-white/5 px-3 py-1.5 text-[11px] text-sand"><Sparkles size={13} className="text-purple" /> Custom language detection</div>
+            <MlWarmupIndicator state={mlWarmup} />
+          </div>
         </div>
         <div className="grid gap-5 p-4 sm:p-6">
           <div className="grid overflow-hidden rounded-[24px] border border-sand/15 md:grid-cols-2">
@@ -575,7 +585,17 @@ type AuthProps = {
   working: boolean;
   slowRequest: boolean;
   submitAuth: (event: FormEvent) => void;
+  mlWarmup: MlWarmupState;
 };
+
+function MlWarmupIndicator({ state }: { state: MlWarmupState }) {
+  return (
+    <span role="status" aria-live="polite" className={`ml-warmup-indicator ml-warmup-${state}`}>
+      {state === "starting" ? <LoaderCircle size={13} className="animate-spin" /> : state === "ready" ? <Check size={13} /> : <X size={13} />}
+      {mlWarmupMessage(state)}
+    </span>
+  );
+}
 
 function clock(totalSeconds: number) {
   return `${String(Math.floor(totalSeconds / 60)).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`;
@@ -658,6 +678,7 @@ function AuthScreen(props: AuthProps) {
             <p className="font-display text-[11px] font-semibold uppercase tracking-[.24em] text-sand">Your voice, understood</p>
             <h1 className="mt-3 font-display text-3xl font-extrabold tracking-[-.04em] text-warm-white">{props.authMode === "login" ? "Welcome back." : "Create your account."}</h1>
             <p className="mt-2 text-sm leading-6 text-sand/85">{props.authMode === "login" ? "Sign in to open your private translator studio." : "Create an account for your private translator studio."}</p>
+            <MlWarmupIndicator state={props.mlWarmup} />
           </div>
           <form onSubmit={props.submitAuth} className="space-y-4">
             <label className="block font-display text-[11px] font-semibold uppercase tracking-[.16em] text-sand">
